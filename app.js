@@ -10,7 +10,7 @@ const app = express();
 app.use(helmet());
 
 // Bootstrap application settings load UI from public folder
-//app.use(express.static('./public'));
+app.use(express.static('./public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true

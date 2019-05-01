@@ -1,12 +1,15 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-const watson = require('../controllers/watson');
+const chia = require('../controllers/chia');
+
 
 // Endpoint to be call from the client side
 router.post('/', function (req, res) {
-    console.log(`logging Request body -- ${req.body}`);
-    watson(req.body).then((rest) => {
+    let chiaController = new chia();
+    chiaController.postWatsonMessage(req.body).then((rest) => {
+         console.log(`Watson Response...`)
+         console.log(JSON.stringify(rest, null, 2));
         return res.status(200).json(rest);
     });
 });
