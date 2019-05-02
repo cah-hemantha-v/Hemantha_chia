@@ -24,7 +24,7 @@ class iPrice {
                     if (response.statusCode == 200) {
                         resolve(response.body);
                     } else if (response.statusCode == 404) {
-                        reject(`Invalid data`);
+                        reject(response.body);
                     }
                 }
             });
@@ -32,7 +32,9 @@ class iPrice {
     }
 
     checkSoldToCustomer(soldto) {
+        console.log(`sold to received -- ${soldto}`);
         let customerUrl = `${this.url}` + `/iprice/open/customer`;
+        console.log(customerUrl);
         let qs = {
             customerNumber: soldto
         };
@@ -40,6 +42,7 @@ class iPrice {
     }
 
     checkMaterialNum(matNum) {
+        console.log(`Received Mat num -- ${matNum}`);
         let materialUrl = `${this.url}` + `/iprice/open/material`;
         let qs = {
             materialNumber: matNum

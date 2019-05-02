@@ -10,12 +10,12 @@ class ChiaController {
 
     postWatsonMessage(message) {
         return new Promise((resolve, reject) => {
-            console.log(`Input Message`);
-            console.log(JSON.stringify(message, null, 2));
+            // console.log(`Input Message`);
+            // console.log(JSON.stringify(message, null, 2));
             let watsonResponse = this.watsonCall.watsonPostMessage(message);
             watsonResponse.then((data) => {
-                if (data.context.checkSoldTo) {
-                    data.context.checkSoldTo = false;
+                if (data.context.CheckSoldto) {
+                    data.context.CheckSoldto = false;
                     let getDC = this.iprice.checkSoldToCustomer(data.context.soldto);
                     getDC.then((soldToBody) => {
                         let soldTo = JSON.parse(soldToBody);
@@ -24,25 +24,29 @@ class ChiaController {
                         distChannels.forEach(element => {
                             dc.push(`${element.id} - ${element.description}`);
                         });
-                        data.output.chiapayload = [{
-                            "type": "button",
-                            "values": dc
-                        }];
+                        data.context.dist_channel = dc;
+                        data.output.chiapayload = [{"type":"button","values":dc}];
                         resolve(data);
                     }, (err) => {
-                        reject(err);
+                        console.error(new Error(err));
+                        let errMessage = JSON.parse(err);
+                        data.output.text[0] = `${errMessage.result.errorMessage}`;
+                        data.output.text[1] = `Can you please provide a valid soldto?`;
+                        data.context.soldtoerr = errMessage.result.errorMessage;
+                        resolve(data);
                     });
-                } else if (data.context.checkMaterial) {
-                    data.context.checkMaterial = false;
-                    let getMN = this.iprice.checkMaterialNum(data.context.material_number);
+                } else if (data.context.CheckMaterial) {
+                    console.log(`called material number`);
+                    data.context.CheckMaterial = false;
+                    let getMN = this.iprice.checkMaterialNum(data.context.cah_material);
                     getMN.then((matNumBody) => {
                         let matNum = JSON.parse(matNumBody);
                         let uom = matNum.result.unitOfMeasures;
+                        data.context.uom = `test test hello`;
                         data.output.chiapayload = [{
                                 'type': 'text',
-                                'values': [`Here is the Vendor and the Description for the Material number you entered \n 
-                                    Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b>`
-                                ]
+                                'values': [`Here is the Vendor and the Description for the Material number you entered \n
+                                    Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b>`]
                             },
                             {
                                 'type': 'text',
@@ -56,8 +60,9 @@ class ChiaController {
                         ];
                         resolve(data);
                     }, (err) => {
+                        console.log(err)
                         reject(err);
-                    })
+                    });
                 } else if (data.context.getPriceQuote) {
                     data.context.getPriceQuote = false;
                     let getPQ = this.iprice.checkExistingPrice(data.context);
@@ -69,15 +74,18 @@ class ChiaController {
                         data.output.text[0] = priceResponse;
                         resolve(data);
                     }, (err) => {
+                        console.log(err)
                         reject(err);
                     })
                 } else {
                     resolve(data);
                 }
-            }, (err) => {
-                reject(err);
             });
         });
+    }
+
+    processWatsonSecondCall() {
+
     }
 }
 
