@@ -25,7 +25,10 @@ class ChiaController {
                             dc.push(`${element.id} - ${element.description}`);
                         });
                         data.context.dist_channel = dc;
-                        data.output.chiapayload = [{"type":"button","values":dc}];
+                        data.output.chiapayload = [{
+                            "type": "button",
+                            "values": dc
+                        }];
                         resolve(data);
                     }, (err) => {
                         console.error(new Error(err));
@@ -60,17 +63,24 @@ class ChiaController {
                         ];
                         resolve(data);
                     }, (err) => {
-                        console.log(err)
-                        reject(err);
+                        console.error(new Error(err));
+                        let errMessage = JSON.parse(err);
+                        data.output.text[0] = `${errMessage.result.errorMessage}`;
+                        data.output.text[1] = `Can you please provide a valid Material number?`;
+                        data.context.matNumErr = errMessage.result.errorMessage;
+                        resolve(data);
                     });
                 } else if (data.context.getPriceQuote) {
                     data.context.getPriceQuote = false;
                     let getPQ = this.iprice.checkExistingPrice(data.context);
                     getPQ.then((priceQuote) => {
                         let pq = JSON.parse(priceQuote);
-                        let priceLocked = pq.result.priceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                        const priceResponse = `As of ${pq.result.asOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
-                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.price}</b>/${pq.result.unitOfMeasure}.\n \n`;
+                        console.log(`final quote -- ${pq}`);
+                        let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
+                        const priceResponse = `As of ${pq.result.maintPriceEffectiveDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n
+                        
+                        `;
                         data.output.text[0] = priceResponse;
                         resolve(data);
                     }, (err) => {

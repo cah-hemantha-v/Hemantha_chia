@@ -53,9 +53,10 @@ class iPrice {
     checkExistingPrice(priceQuote) {
         let qs = {
             customerNumber: priceQuote.soldto,
-            materialNumber: priceQuote.material_number,
-            um: priceQuote.uom,
-            asOfDate: priceQuote.currentDate
+            materialNumber: priceQuote.cah_material,
+            um: priceQuote.selected_uom,
+            asOfDate: priceQuote.selected_date,
+            dc:priceQuote.selected_dc
         };
         let pricequoteUrl = `${this.url}` + `/iprice/open/pricequote`;
         return this.createIPricePost(pricequoteUrl, qs);
