@@ -34,13 +34,14 @@ class ChiaController {
                         console.error(new Error(err));
                         let errMessage = JSON.parse(err);
                         data.output.text[0] = `${errMessage.result.errorMessage}`;
-                        data.output.text[1] = `Can you please provide a valid soldto?`;
+                        data.output.text[1] = `Can you please provide a valid customer soldto?`;
                         data.context.soldtoerr = errMessage.result.errorMessage;
                         resolve(data);
                     });
                 } else if (data.context.CheckMaterial) {
                     console.log(`called material number`);
                     data.context.CheckMaterial = false;
+                    data.context.matNumErr = false;
                     let getMN = this.iprice.checkMaterialNum(data.context.cah_material);
                     getMN.then((matNumBody) => {
                         let matNum = JSON.parse(matNumBody);
@@ -48,8 +49,10 @@ class ChiaController {
                         data.context.uom = `test test hello`;
                         data.output.chiapayload = [{
                                 'type': 'text',
-                                'values': [`Here is the Vendor and the Description for the Material number you entered \n
-                                    Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b>`]
+                                'values': [`Here is the vendor and the description for the material number you have entered.`]
+                            }, {
+                                'type': 'text',
+                                'values': [`Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b>`]
                             },
                             {
                                 'type': 'text',
@@ -65,7 +68,7 @@ class ChiaController {
                     }, (err) => {
                         console.error(new Error(err));
                         let errMessage = JSON.parse(err);
-                        data.output.text[0] = `${errMessage.result.errorMessage}`;
+                        data.output.text[0] = `${data.context.cah_material} is an ${errMessage.result.errorMessage}`;
                         data.output.text[1] = `Can you please provide a valid Material number?`;
                         data.context.matNumErr = errMessage.result.errorMessage;
                         resolve(data);
@@ -77,11 +80,10 @@ class ChiaController {
                         let pq = JSON.parse(priceQuote);
                         console.log(`final quote -- ${pq}`);
                         let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                        const priceResponse = `As of ${pq.result.maintPriceEffectiveDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
-                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n
-                        
-                        `;
+                        const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
                         data.output.text[0] = priceResponse;
+                        data.output.text[1] = `To check another price, just hit refresh.`
                         resolve(data);
                     }, (err) => {
                         console.log(err)
@@ -93,10 +95,7 @@ class ChiaController {
             });
         });
     }
-
-    processWatsonSecondCall() {
-
-    }
+   
 }
 
 module.exports = ChiaController;
