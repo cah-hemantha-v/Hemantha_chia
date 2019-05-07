@@ -4,9 +4,10 @@ applications:
   memory: 256M
   instances: 1
   env:
-    WHITELISTURLS: https://chia.apps.cf.np.cahcloud.net, https://chia-med-pricing.apps.cf.np.cahcloud.com, http://localhost:4200,https://apps.system.cf.np.cahcloud.net
+    WHITELISTURLS: https://chia.apps.cf.np.cahcloud.net, https://chia-med-pricing.apps.cf.np.cahcloud.com, http://localhost:4200, https://apps.system.cf.np.cahcloud.net
     WORKSPACE_ID: c6d87b7f-c012-4a4d-91bc-e7985605fc29
-    IPRICE_HOST: http://iprice.dev.cardinalhealth.net
+    IPRICE_HOST: https://api.dev.cardinalhealth.com
+    APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
 routes:
  - route: chia-med-pricing.apps.cf.np.cahcloud.com
 command: node server.js

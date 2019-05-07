@@ -25,10 +25,17 @@ class ChiaController {
                             dc.push(`${element.id} - ${element.description}`);
                         });
                         data.context.dist_channel = dc;
-                        data.output.chiapayload = [{
-                            "type": "button",
-                            "values": dc
-                        }];
+                        if (dc.length > 0) {
+                            data.output.chiapayload = [{
+                                "type": "button",
+                                "values": dc
+                            }];
+                        } else {
+                            data.output.chiapayload = [{
+                                "type": "button",
+                                "values": ["Sales"]
+                            }];
+                        }
                         resolve(data);
                     }, (err) => {
                         console.error(new Error(err));
@@ -46,7 +53,6 @@ class ChiaController {
                     getMN.then((matNumBody) => {
                         let matNum = JSON.parse(matNumBody);
                         let uom = matNum.result.unitOfMeasures;
-                        data.context.uom = `test test hello`;
                         data.output.chiapayload = [{
                                 'type': 'text',
                                 'values': [`Here is the vendor and the description for the material number you have entered.`]
@@ -95,7 +101,7 @@ class ChiaController {
             });
         });
     }
-   
+
 }
 
 module.exports = ChiaController;

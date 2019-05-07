@@ -22,7 +22,7 @@ class Watson {
                 context: body.context || {},
                 input: body.input || {}
             };
-            
+
             /** Calls the assistant message api. Returns a promise **/
             assistant.message(payload, function (err, data) {
                 if (err) {
