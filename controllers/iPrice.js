@@ -3,20 +3,21 @@ const request = require("request");
 
 class iPrice {
     constructor() {
-        this.url = process.env.IPRICE_HOST || `http://iprice.dev.cardinalhealth.net`;
+        this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
     }
 
-    createIPricePost(url, qs) {
+    createIPricePost(url, qs, method) {
         return new Promise((resolve, reject) => {
             var options = {
-                method: 'GET',
+                method: method,
                 url: url,
                 qs: qs,
                 headers: {
-                    Host: 'iprice.dev.cardinalhealth.net',
-                    uid: 'kararu01',
+                    'Host': 'api.dev.cardinalhealth.com',
+                    'uid': 'batmah01',
                     'Content-Type': 'application/json',
-                    Accept: 'application/json'
+                    'Accept': 'application/json',
+                    'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
                 }
             };
             request(options, function (error, response, body) {
@@ -33,21 +34,21 @@ class iPrice {
 
     checkSoldToCustomer(soldto) {
         console.log(`sold to received -- ${soldto}`);
-        let customerUrl = `${this.url}` + `/iprice/open/customer`;
+        let customerUrl = `${this.url}` + '/medical-iprice-customer';
         console.log(customerUrl);
         let qs = {
             customerNumber: soldto
         };
-        return this.createIPricePost(customerUrl, qs);
+        return this.createIPricePost(customerUrl, qs, 'GET');
     }
 
     checkMaterialNum(matNum) {
         console.log(`Received Mat num -- ${matNum}`);
-        let materialUrl = `${this.url}` + `/iprice/open/material`;
+        let materialUrl = `${this.url}` + '/medical-iprice-material';
         let qs = {
             materialNumber: matNum
         };
-        return this.createIPricePost(materialUrl, qs);
+        return this.createIPricePost(materialUrl, qs, 'GET');
     }
 
     checkExistingPrice(priceQuote) {
@@ -58,8 +59,8 @@ class iPrice {
             asOfDate: priceQuote.selected_date,
             dc:priceQuote.selected_dc
         };
-        let pricequoteUrl = `${this.url}` + `/iprice/open/pricequote`;
-        return this.createIPricePost(pricequoteUrl, qs);
+        let pricequoteUrl = `${this.url}` + '/medical-iprice-proposal';
+        return this.createIPricePost(pricequoteUrl, qs, 'POST');
     }
 
     checkProposalStatus(ProposalNumber) {
@@ -67,8 +68,8 @@ class iPrice {
             proposalId:ProposalNumber,
             returnLimit:10
         };
-        let ProposalNumberUrl = `${this.url}` + `/iprice/open/proposal`;
-        return this.createIPricePost(ProposalNumberUrl, qs);
+        let ProposalNumberUrl = `${this.url}` + `/medical-iprice-proposal/status`;
+        return this.createIPricePost(ProposalNumberUrl, qs, 'GET');
     }
 }
 
