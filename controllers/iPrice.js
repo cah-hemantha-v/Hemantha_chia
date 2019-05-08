@@ -61,6 +61,15 @@ class iPrice {
         let pricequoteUrl = `${this.url}` + `/iprice/open/pricequote`;
         return this.createIPricePost(pricequoteUrl, qs);
     }
+
+    checkProposalStatus(ProposalNumber) {
+        let qs = {
+            proposalId:ProposalNumber,
+            returnLimit:10
+        };
+        let ProposalNumberUrl = `${this.url}` + `/iprice/open/proposal`;
+        return this.createIPricePost(ProposalNumberUrl, qs);
+    }
 }
 
 module.exports = iPrice;

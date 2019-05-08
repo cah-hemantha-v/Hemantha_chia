@@ -77,7 +77,7 @@ class ChiaController {
                         let pq = JSON.parse(priceQuote);
                         console.log(`final quote -- ${pq}`);
                         let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                        const priceResponse = `As of ${pq.result.maintPriceEffectiveDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                    const priceResponse = `As of ${pq.result.maintPriceEffectiveDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
                         ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n
                         
                         `;
@@ -86,17 +86,31 @@ class ChiaController {
                     }, (err) => {
                         console.log(err)
                         reject(err);
-                    })
+                    });
+                } else if (data.context.Check_Proposal) {
+                    data.context.Check_Proposal = false;
+                    let getPS = this.iprice.checkProposalStatus(data.context.proposal_number);
+
+                    getPS.then((ProposalStatus) => {
+                        let prop_stat = JSON.parse(ProposalStatus);
+                        const ProposalResponse = 'Based on the Proposal Number your entered:\n\nProposal Number: ${prop_stat.proposalId}\nProposal Type: ${prop_stat.proposalType}\nProposal Description: ${prop_stat.proposalDescription}\nCustomer Name: ${prop_stat.customerName}\nMaterial Count: ${prop_stat.loadedCount}\nProposal Load Status: ';
+
+                        data.output.text[0] = ProposalResponse;
+                        resolve(data);
+                    }, (err) => {
+                        console.error(new Error(err));
+                        let errMessage = JSON.parse(err);
+                        data.output.text[0] = `${errMessage.result.errorMessage}`;
+                        data.output.text[1] = `Can you please provide a valid proposal number?`;
+                        data.context.proposalerr = errMessage.result.errorMessage;
+                        resolve(data);
+                    });
                 } else {
                     resolve(data);
                 }
             });
         });
-    }
-
-    processWatsonSecondCall() {
-
-    }
+    }  
 }
 
 module.exports = ChiaController;
