@@ -14,7 +14,7 @@ class iPrice {
                 qs: qs,
                 headers: {
                     'Host': 'api.dev.cardinalhealth.com',
-                    'uid': 'kararu01',
+                    'uid': 'batmah01',
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
@@ -57,10 +57,19 @@ class iPrice {
             materialNumber: priceQuote.cah_material,
             um: priceQuote.selected_uom,
             asOfDate: priceQuote.selected_date,
-            dc:priceQuote.selected_dc
+            dc: priceQuote.selected_dc
         };
         let pricequoteUrl = `${this.url}` + '/medical-iprice-proposal';
         return this.createIPricePost(pricequoteUrl, qs, 'POST');
+    }
+
+    checkProposalStatus(ProposalNumber) {
+        let qs = {
+            proposalId: ProposalNumber || '',
+            returnLimit: 10
+        };
+        let ProposalNumberUrl = `${this.url}` + '/medical-iprice-proposal/status';
+        return this.createIPricePost(ProposalNumberUrl, qs, 'GET');
     }
 }
 
