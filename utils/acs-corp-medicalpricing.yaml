@@ -17,7 +17,7 @@ paths:
   '/api/medpricing':
     post:
       summary: 
-      description: Returns CHIA Chat Response from PCF Node app. 
+      description: CHIA PCF endpoint for Medical Pricing
       operationId: hello
       responses:
         "200":
