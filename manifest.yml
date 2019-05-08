@@ -9,5 +9,5 @@ applications:
     IPRICE_HOST: https://api.dev.cardinalhealth.com
     APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
 routes:
- - route: chia-med-pricing.apps.cf.np.cahcloud.com
+ - route: medpricing.apps.cf.np.gc.cahcloud.com
 command: node server.js

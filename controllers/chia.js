@@ -101,7 +101,6 @@ class ChiaController {
             });
         });
     }
-
 }
 
 module.exports = ChiaController;
