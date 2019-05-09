@@ -86,10 +86,12 @@ class ChiaController {
                         let pq = JSON.parse(priceQuote);
                         console.log(`final quote -- ${pq}`);
                         let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                        const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                        let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
                         ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
+                        let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${supplierAgreementDescription} - ${supplierAgreementExtDescription} and is valid from ${contractCostValidityDateFrom} to ${contractCostValidityDateTo}.`
                         data.output.text[0] = priceResponse;
-                        data.output.text[1] = `To check another price, just hit refresh.`
+                        data.output.text[1] = tierResponse;
+                        data.output.text[2] = `To check another price, just hit refresh.`
                         resolve(data);
                     }, (err) => {
                         console.log(err)
