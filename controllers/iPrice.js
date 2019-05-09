@@ -57,7 +57,7 @@ class iPrice {
             materialNumber: priceQuote.cah_material,
             um: priceQuote.selected_uom,
             asOfDate: priceQuote.selected_date,
-            dc: priceQuote.selected_dc
+            dc:priceQuote.selected_dc
         };
         let pricequoteUrl = `${this.url}` + '/medical-iprice-proposal';
         return this.createIPricePost(pricequoteUrl, qs, 'POST');
@@ -65,10 +65,10 @@ class iPrice {
 
     checkProposalStatus(ProposalNumber) {
         let qs = {
-            proposalId: ProposalNumber || '',
-            returnLimit: 10
+            proposalId:ProposalNumber,
+            returnLimit:10
         };
-        let ProposalNumberUrl = `${this.url}` + '/medical-iprice-proposal/status';
+        let ProposalNumberUrl = `${this.url}` + `/medical-iprice-proposal/status`;
         return this.createIPricePost(ProposalNumberUrl, qs, 'GET');
     }
 }

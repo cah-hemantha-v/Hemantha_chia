@@ -109,6 +109,7 @@ class ChiaController {
                         let prop_stat = JSON.parse(proposalResponse);
                         let payloadArray = [];
                         if (data.context.isProposalSpecific) {
+                            data.context.isProposalSpecific=false;
                             payloadArray.push({
                                 'type': 'table',
                                 'values': []
@@ -126,6 +127,9 @@ class ChiaController {
                             }, {
                                 'type': 'text',
                                 'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`]
+                            }, {
+                                'type': 'text',
+                                'values': ['Have a great day!']
                             })
                         }
                         prop_stat.result.forEach(element => {
@@ -142,6 +146,7 @@ class ChiaController {
                         let errMessage = JSON.parse(err);
                         data.output.text[0] = `${errMessage.result.errorMessage}`;
                         data.output.text[1] = `Can you please provide a valid proposal number?`;
+                        data.context.proposal_number = null
                         data.context.proposalerr = errMessage.result.errorMessage;
                         resolve(data);
                     });
