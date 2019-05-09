@@ -88,7 +88,7 @@ class ChiaController {
                         let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
                         let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
                         ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                        let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${supplierAgreementDescription} - ${supplierAgreementExtDescription} and is valid from ${contractCostValidityDateFrom} to ${contractCostValidityDateTo}.`
+                        let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
                         data.output.text[0] = priceResponse;
                         data.output.text[1] = tierResponse;
                         data.output.text[2] = `To check another price, just hit refresh.`
