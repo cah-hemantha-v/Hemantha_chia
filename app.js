@@ -4,7 +4,8 @@ const bodyParser = require('body-parser'); // parser for post requests
 const cors = require('cors');
 const helmet = require('helmet');
 const whiteListURL = process.env.WHITELISTURLS || 'http://localhost:3000'
-const messageRouter = require('./routers/chiaroutes');
+const routes = require('./routers/chiaroutes');
+
 
 const app = express();
 app.use(helmet());
@@ -33,10 +34,14 @@ app.use(cors({
   }
 }));
 
+
+routes(app);
+
 app.get('/', function (req, res) {
   res.send('You are not authorized to view this page!!');
 });
 
-app.use('/api/message', messageRouter);
+
+//app.use('/api/message', routes);
 
 module.exports = app;

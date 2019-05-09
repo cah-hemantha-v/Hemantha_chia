@@ -2,19 +2,20 @@
 const request = require("request");
 
 class iPrice {
-    constructor() {
+    constructor(uid) {
         this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
     }
 
-    createIPricePost(url, qs, method) {
+    createIPricePost(url, qs, method, uid) {
         return new Promise((resolve, reject) => {
+            console.log(`iprice uid = ${uid}`);
             var options = {
                 method: method,
                 url: url,
                 qs: qs,
                 headers: {
                     'Host': 'api.dev.cardinalhealth.com',
-                    'uid': 'batmah01',
+                    'uid': uid,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
@@ -32,44 +33,45 @@ class iPrice {
         });
     }
 
-    checkSoldToCustomer(soldto) {
+    checkSoldToCustomer(soldto, uid) {
         console.log(`sold to received -- ${soldto}`);
         let customerUrl = `${this.url}` + '/medical-iprice-customer';
         console.log(customerUrl);
         let qs = {
             customerNumber: soldto
         };
-        return this.createIPricePost(customerUrl, qs, 'GET');
+        return this.createIPricePost(customerUrl, qs, 'GET', uid);
     }
 
-    checkMaterialNum(matNum) {
+    checkMaterialNum(matNum, uid) {
         console.log(`Received Mat num -- ${matNum}`);
         let materialUrl = `${this.url}` + '/medical-iprice-material';
         let qs = {
             materialNumber: matNum
         };
-        return this.createIPricePost(materialUrl, qs, 'GET');
+        return this.createIPricePost(materialUrl, qs, 'GET', uid);
     }
 
-    checkExistingPrice(priceQuote) {
+    checkExistingPrice(priceQuote, uid) {
         let qs = {
             customerNumber: priceQuote.soldto,
             materialNumber: priceQuote.cah_material,
             um: priceQuote.selected_uom,
             asOfDate: priceQuote.selected_date,
-            dc:priceQuote.selected_dc
+            dc: priceQuote.selected_dc
         };
         let pricequoteUrl = `${this.url}` + '/medical-iprice-proposal';
-        return this.createIPricePost(pricequoteUrl, qs, 'POST');
+        return this.createIPricePost(pricequoteUrl, qs, 'POST', uid);
     }
 
-    checkProposalStatus(ProposalNumber) {
+    checkProposalStatus(ProposalNumber, uid) {
+        console.log(`prop-${uid}`);
         let qs = {
-            proposalId:ProposalNumber,
-            returnLimit:10
+            proposalId: ProposalNumber,
+            returnLimit: 10
         };
         let ProposalNumberUrl = `${this.url}` + `/medical-iprice-proposal/status`;
-        return this.createIPricePost(ProposalNumberUrl, qs, 'GET');
+        return this.createIPricePost(ProposalNumberUrl, qs, 'GET', uid);
     }
 }
 
