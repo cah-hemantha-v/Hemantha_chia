@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/CardinalHealth/acs-chia-medpricing#readme",
   "dependencies": {
+    "activedirectory": "^0.7.2",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",

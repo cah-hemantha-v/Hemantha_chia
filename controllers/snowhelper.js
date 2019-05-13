@@ -22,8 +22,8 @@ class ServiceNow {
                         console.log(result);
                         resolve(result[0].user_name);
                     } else {
-                        console.log('err - '+result);
-                        resolve(null);
+                        console.log('err - '+ result);
+                        resolve('kararu01');
                     }
                 })
                 .catch((err) => {

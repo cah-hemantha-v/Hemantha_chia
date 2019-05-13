@@ -31,11 +31,6 @@ class ChiaController {
                                 'type': 'button',
                                 'values': dc
                             }];
-                        } else {
-                            data.output.chiapayload = [{
-                                'type': 'button',
-                                'values': ['Sales']
-                            }];
                         }
                         resolve(data);
                     }, (err) => {
@@ -55,21 +50,39 @@ class ChiaController {
                         let matNum = JSON.parse(matNumBody);
                         let uom = matNum.result.unitOfMeasures;
                         data.context.uom = uom;
-                        data.output.chiapayload = [{
-                                'type': 'text',
-                                'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
+                        if (uom.length > 0) {
+                            data.output.chiapayload = [{
+                                    'type': 'text',
+                                    'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
                                     <div>Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b></div>`]
-                            },
-                            {
-                                'type': 'text',
-                                'values': [`<div>What is the UOM you would like checked? </div>
+                                },
+                                {
+                                    'type': 'text',
+                                    'values': [`<div>What is the UOM you would like checked? </div>
                                             <div>You can choose one of the several options below or type in your own UOM.</div>`]
-                            },
-                            {
-                                'type': 'button',
-                                'values': uom
-                            }
-                        ];
+                                },
+                                {
+                                    'type': 'button',
+                                    'values': uom
+                                }
+                            ];
+                        } else {
+                            data.output.chiapayload = [{
+                                    'type': 'text',
+                                    'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
+                                <div>Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b></div>`]
+                                },
+                                {
+                                    'type': 'text',
+                                    'values': [`<div>What is the UOM you would like checked? </div>
+                                        <div>You can choose one of the several options below or type in your own UOM.</div>`]
+                                },
+                                {
+                                    'type': 'button',
+                                    'values': ['Sales']
+                                }
+                            ];
+                        }
                         resolve(data);
                     }, (err) => {
                         console.error(new Error(err));
@@ -90,8 +103,8 @@ class ChiaController {
                             ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
                         let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
                         data.output.text[0] = priceResponse;
-                        data.output.text[1] = tierResponse;
-                        data.output.text[2] = `To check another price, just hit refresh.`
+                        //data.output.text[1] = tierResponse;
+                        data.output.text[1] = `To check another price, just hit refresh.`
                         resolve(data);
                     }, (err) => {
                         console.log(err)
@@ -125,9 +138,6 @@ class ChiaController {
                             }, {
                                 'type': 'text',
                                 'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`]
-                            }, {
-                                'type': 'text',
-                                'values': ['Have a great day!']
                             })
                         }
                         prop_stat.result.forEach(element => {
