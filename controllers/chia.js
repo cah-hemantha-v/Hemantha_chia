@@ -11,14 +11,17 @@ class ChiaController {
 
     postWatsonMessage(request) {
         return new Promise((resolve, reject) => {
+            console.log(`watson input`);
+            console.log(request.body);
             const watsonResponse = this.watsonCall.watsonPostMessage(request.body);
             watsonResponse.then((data) => {
-                console.log(request.login_uid);
-                let uid = request.login_uid;
+                let uid = request.login_uid || 'kararu01'; // Temporary UID will be removed before prod move.
                 if (data.context.CheckSoldto) {
                     data.context.CheckSoldto = false;
                     let getDC = this.iprice.checkSoldToCustomer(data.context.soldto, uid);
                     getDC.then((soldToBody) => {
+                        data.context.counter = 0;
+                        data.context.soldtoerr = false;
                         let soldTo = JSON.parse(soldToBody);
                         let distChannels = soldTo.result.distributionChannelIds;
                         let dc = [];
@@ -36,10 +39,10 @@ class ChiaController {
                     }, (err) => {
                         console.error(new Error(err));
                         let errMessage = JSON.parse(err);
-                        data.output.text[0] = `${errMessage.result.errorMessage}`;
-                        data.output.text[1] = `Can you please provide a valid customer soldto?`;
-                        data.context.soldtoerr = errMessage.result.errorMessage;
-                        resolve(data);
+                        data.context.soldtoerr = `${errMessage.result.errorMessage}`;
+                        this.watsonCall.watsonPostMessage(data).then((rest) => {
+                            resolve(rest);
+                        });
                     });
                 } else if (data.context.CheckMaterial) {
                     console.log(`called material number`);
@@ -49,6 +52,7 @@ class ChiaController {
                     getMN.then((matNumBody) => {
                         let matNum = JSON.parse(matNumBody);
                         let uom = matNum.result.unitOfMeasures;
+                        data.context.counter = 0;
                         data.context.uom = uom;
                         if (uom.length > 0) {
                             data.output.chiapayload = [{
@@ -87,10 +91,10 @@ class ChiaController {
                     }, (err) => {
                         console.error(new Error(err));
                         let errMessage = JSON.parse(err);
-                        data.output.text[0] = `${data.context.cah_material} is an ${errMessage.result.errorMessage}`;
-                        data.output.text[1] = `Can you please provide a valid Material number?`;
-                        data.context.matNumErr = errMessage.result.errorMessage;
-                        resolve(data);
+                        data.context.matNumErr = `${data.context.cah_material} is an ${errMessage.result.errorMessage}`;
+                        this.watsonCall.watsonPostMessage(data).then((rest) => {
+                            resolve(rest);
+                        });
                     });
                 } else if (data.context.getPriceQuote) {
                     data.context.getPriceQuote = false;
@@ -107,7 +111,7 @@ class ChiaController {
                         data.output.text[1] = `To check another price, just hit refresh.`
                         resolve(data);
                     }, (err) => {
-                        console.log(err)
+                        console.error(new Error(`Error Occured during Price Quote Check - ${err}`));
                         reject(err);
                     })
                 } else if (data.context.Check_Proposal) {
@@ -154,7 +158,7 @@ class ChiaController {
                         let errMessage = JSON.parse(err);
                         data.output.text[0] = `${errMessage.result.errorMessage}`;
                         data.output.text[1] = `Can you please provide a valid proposal number?`;
-                        data.context.proposal_number = null
+                        //data.context.proposal_number = null
                         data.context.proposalerr = errMessage.result.errorMessage;
                         resolve(data);
                     });

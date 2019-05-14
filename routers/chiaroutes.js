@@ -35,8 +35,8 @@ function getRouter(app) {
     app.post('/api/message', getUid, function (req, res) {
         let chiaController = new chia();
         chiaController.postWatsonMessage(req).then((rest) => {
-            // console.log(`Watson Response...`)
-            // console.log(JSON.stringify(rest, null, 2));
+            console.log(`Watson Response...`)
+            console.log(rest);
             return res.status(200).json(rest);
         }, (err) => {
             console.error(new Error(`Error Occured - ${err}`));

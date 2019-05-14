@@ -9,6 +9,9 @@ class iPrice {
     createIPricePost(url, qs, method, uid) {
         return new Promise((resolve, reject) => {
             console.log(`iprice uid = ${uid}`);
+            if(!uid){
+                uid = 'kararu01'; //This is to handle temporarily during dev phase. Needs to be removed.!
+            }
             var options = {
                 method: method,
                 url: url,
