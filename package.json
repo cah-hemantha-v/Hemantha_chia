@@ -1,0 +1,37 @@
+{
+  "name": "chia-med-pricing",
+  "version": "1.0.0",
+  "description": "NodeJS project created for CHIA for Medical Pricing team.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CardinalHealth/acs-chia-medpricing.git"
+  },
+  "author": "Arun Karunakaran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CardinalHealth/acs-chia-medpricing/issues"
+  },
+  "homepage": "https://github.com/CardinalHealth/acs-chia-medpricing#readme",
+  "dependencies": {
+    "activedirectory": "^0.7.2",
+    "bluebird": "^3.5.4",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "helmet": "^3.16.0",
+    "ibm-watson": "^4.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.4.0",
+    "request": "^2.88.0"
+  },
+  "engines": {
+    "node": "10.x.x",
+    "npm": "5.6.x"
+  }
+}
