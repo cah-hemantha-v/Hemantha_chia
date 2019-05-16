@@ -15,5 +15,5 @@ applications:
     AD_USERNAME: btsid.bot001
     AD_PASSWORD: Cardinal@1
 routes:
- - route: mp-chia.apps.cf.np.gc.cahcloud.net
+  - route: mp-chia.apps.cf.np.gc.cahcloud.net
 command: node server.js
