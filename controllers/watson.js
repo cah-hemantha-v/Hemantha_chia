@@ -3,9 +3,9 @@ const AssistantV1 = require('ibm-watson/assistant/v1');
 class Watson {
     constructor() {
         this.version = '2018-02-16';
-        this.iam_apikey = 'ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr';
+        this.iam_apikey = process.env.WATSON_APIKEY || 'ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr';
         this.url = 'https://gateway.watsonplatform.net/assistant/api';
-        this.workspace_id = 'c6d87b7f-c012-4a4d-91bc-e7985605fc29';
+        this.workspace_id = process.env.WORKSPACE_ID || 'c6d87b7f-c012-4a4d-91bc-e7985605fc29';
     }
 
     watsonPostMessage(body) {
@@ -18,7 +18,7 @@ class Watson {
             });
 
             let payload = {
-                workspace_id: process.env.WORKSPACE_ID || this.workspace_id,
+                workspace_id: this.workspace_id,
                 context: body.context || {},
                 input: body.input || {}
             };
