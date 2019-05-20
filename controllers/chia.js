@@ -10,8 +10,8 @@ module.exports = class ChiaController {
     }
 
     checkSoldTo() {
+        logger.debug("inside check SoldTo method");
         return new Promise((resolve, reject) => {
-            logger.debug("inside check SoldTo method");
             this.watson.setContext("CheckSoldto", false);
             const sold_to = this.watson.getContext("soldto");
 
@@ -50,8 +50,8 @@ module.exports = class ChiaController {
     }
 
     CheckMaterial() {
+        logger.debug(`inside check material method`);
         return new Promise((resolve, reject) => {
-            logger.debug(`inside check material method`);
             this.watson.response.context.CheckMaterial = false;
             this.watson.response.context.matNumErr = false;
 
@@ -112,11 +112,10 @@ module.exports = class ChiaController {
     }
 
     getPriceQuote() {
+        logger.debug("inside get price quote method");
         return new Promise((resolve, reject) => {
-            logger.debug("inside get price quote method");
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
-                logger.info(priceQuote);
                 const pq = JSON.parse(priceQuote);
                 const priceLocked = pq.result.currentPriceLockedIndicator == 'YES' ? 'locked' : 'unlocked';
                 const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
@@ -136,8 +135,8 @@ module.exports = class ChiaController {
     }
 
     checkProposal() {
+        logger.debug(`Check Proposal Code called...`);
         return new Promise((resolve, reject) => {
-            logger.debug(`Check Proposal Code called...`);
             this.watson.setContext("Check_Proposal", false);
             this.watson.setContext("proposalerr", false);
 
@@ -192,8 +191,8 @@ module.exports = class ChiaController {
     }
 
     postWatsonMessage(request) {
+        logger.debug(`watson input`);
         return new Promise((resolve, reject) => {
-            logger.debug(`watson input`);
 
             this.watson.setRequest(request);
             this.iprice.setUid(this.watson.request.login_uid || 'kararu01');

@@ -4,10 +4,10 @@ const logger = require('../utils/logger');
 
 module.exports = class iPrice {
     constructor(uid) {
-        this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
+        this.url = process.env.IPRICE_HOST || 'https://api.stage.cardinalhealth.com';
         this.uid = uid || "kararu01";
         this.headers = {
-            'Host': 'api.dev.cardinalhealth.com',
+            'Host': 'api.stage.cardinalhealth.com',
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -21,16 +21,12 @@ module.exports = class iPrice {
 
     getIPrice(url, qs) {
         logger.debug("inside get iprice method");
-        return this.createIPricePost(url, qs, "GET").then((response) => {
-            return response;
-        });
+        return this.createIPricePost(url, qs, "GET");
     }
 
     PostIPrice(url, qs) {
         logger.debug("inside post iprice method");
-        this.createIPricePost(url, qs, "POST").then((response) => {
-            return response;
-        });
+        return this.createIPricePost(url, qs, "POST");
     }
 
     createIPricePost(url, qs, method) {
@@ -43,8 +39,7 @@ module.exports = class iPrice {
                 headers: this.headers
             };
 
-            request(options, function (error, response, body) {
-                logger.debug(response);
+            request(options, (error, response, body) => {
                 if (!error) {
                     if (response.statusCode == 200) resolve(response.body);
                     else if (response.statusCode == 404) reject(response.body);
@@ -74,18 +69,16 @@ module.exports = class iPrice {
     }
 
     checkExistingPrice(priceQuote) {
-        return new Promise((resolve, reject) => {
-            logger.debug("inside check existing price method");
-            const pricequoteUrl = `${this.url}/medical-iprice-proposal`;
-            const qs = {
-                customerNumber: priceQuote.soldto,
-                materialNumber: priceQuote.cah_material,
-                um: priceQuote.selected_uom,
-                asOfDate: priceQuote.selected_date,
-                dc: priceQuote.selected_dc
-            };
-            resolve(this.PostIPrice(pricequoteUrl, qs));
-        })
+        logger.debug("inside check existing price method");
+        const pricequoteUrl = `${this.url}/medical-iprice-proposal`;
+        const qs = {
+            customerNumber: priceQuote.soldto,
+            materialNumber: priceQuote.cah_material,
+            um: priceQuote.selected_uom,
+            asOfDate: priceQuote.selected_date,
+            dc: priceQuote.selected_dc
+        };
+        return this.PostIPrice(pricequoteUrl, qs);
     }
 
     checkProposalStatus(ProposalNumber) {
