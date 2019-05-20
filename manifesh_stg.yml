@@ -6,7 +6,7 @@ applications:
   env:
     WHITELISTURLS: https://cardinalb2e.oktapreview.com, https://cardinalpreprdb2e.oktapreview.com, https://chia-stg.apps.cf.np.gc.cahcloud.net, https://mp-chia-stg.apps.cf.np.gc.cahcloud.net, https://apps.system.cf.np.gc.cahcloud.net
     WORKSPACE_ID: 1b5b6733-c0a7-4431-b156-94a173f608c0
-    IPRICE_HOST: https://api.dev.cardinalhealth.com
+    IPRICE_HOST: https://api.stage.cardinalhealth.com
     WATSON_APIKEY: ARtLtVijMRMf2844yXGSnAhm8pnqyjBU5fXAiZZArbDX
     APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
     SNOW_INSTANCE: cardinalstage

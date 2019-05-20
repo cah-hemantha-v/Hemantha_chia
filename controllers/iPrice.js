@@ -9,21 +9,22 @@ class iPrice {
     createIPricePost(url, qs, method, uid) {
         return new Promise((resolve, reject) => {
             console.log(`iprice uid = ${uid}`);
-            if(!uid){
+            if (!uid) {
                 uid = 'kararu01'; //This is to handle temporarily during dev phase. Needs to be removed.!
-            }
+            }            
             var options = {
                 method: method,
                 url: url,
                 qs: qs,
                 headers: {
-                    'Host': 'api.dev.cardinalhealth.com',
                     'uid': uid,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
                 }
             };
+            console.log(`printing iPrice config details..`)
+            console.log(options);
             request(options, function (error, response, body) {
                 if (!error) {
                     if (response.statusCode == 200) {
