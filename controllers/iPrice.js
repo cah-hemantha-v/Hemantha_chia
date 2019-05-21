@@ -3,33 +3,31 @@ const request = require("request");
 
 class iPrice {
     constructor(uid) {
-        this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
+        this.url = 'https://'+process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
     }
 
     createIPricePost(url, qs, method, uid) {
         return new Promise((resolve, reject) => {
             console.log(`iprice uid = ${uid}`);
-            if (!uid) {
-                uid = 'kararu01'; //This is to handle temporarily during dev phase. Needs to be removed.!
-            }            
             var options = {
                 method: method,
                 url: url,
                 qs: qs,
                 headers: {
+                    'Host': process.env.IPRICE_HOST,
                     'uid': uid,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
                 }
             };
-            console.log(`printing iPrice config details..`)
-            console.log(options);
             request(options, function (error, response, body) {
                 if (!error) {
                     if (response.statusCode == 200) {
                         resolve(response.body);
                     } else if (response.statusCode == 404) {
+                        reject(response.body);
+                    } else if (response.statusCode == 403 || response.statusCode == 401) {
                         reject(response.body);
                     }
                 }

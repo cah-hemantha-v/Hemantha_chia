@@ -1,7 +1,7 @@
 'use strict';
+
 const watson = require('./watson');
 const iPrice = require('./iPrice');
-
 
 class ChiaController {
     constructor() {
@@ -15,7 +15,7 @@ class ChiaController {
             console.log(request.body);
             const watsonResponse = this.watsonCall.watsonPostMessage(request.body);
             watsonResponse.then((data) => {
-                let uid = request.login_uid || 'kararu01'; // Temporary UID will be removed before prod move.
+                let uid = request.login_uid;
                 if (data.context.CheckSoldto) {
                     data.context.CheckSoldto = false;
                     let getDC = this.iprice.checkSoldToCustomer(data.context.soldto, uid);
