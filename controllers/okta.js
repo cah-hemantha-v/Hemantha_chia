@@ -1,38 +1,42 @@
-//logic to be writted for fetching UID based on logged in user.
+'use strict';
+const request = require("request");
+const logger = require("../utils/logger");
 
-var request = require("request");
-
-function getUserInfo(host, token) {
-    var options = {
-        method: 'GET',
-        url: 'https://' + host + '/oauth2/v1/userinfo',
-        headers: {
+module.exports = class Okta {
+    constructor(host, token) {
+        this.url = 'https://' + host + '/oauth2/v1'
+        this.header = {
             'content-type': 'application/x-www-form-urlencoded',
             'Host': host,
             'Cache-Control': 'no-cache',
             'Accept': '*/*',
             'Authorization': token
         }
-    };
-    console.log(`options..`);
-    console.log(options);
-    return new Promise((resolve, reject) => {
-        request(options, function (error, response, body) {
-            try {
-                if (!error) {
-                    console.log(body);
-                    resolve(body);
-                } else {
-                    console.error(new Error(`Error with Okta user info -- ${error}`));
+    }
+
+    getUserInfo() {
+        const options = {
+            method: 'GET',
+            url: this.url + '/userinfo',
+            headers: this.header
+        };
+
+        return new Promise((resolve, reject) => {
+            request(options, function (error, response, body) {
+                try {
+                    if (!error) {
+                        logger.debug(body);
+                        resolve(body);
+                    } else {
+                        logger.error(`Error with Okta user info`);
+                        logger.error(error);
+                        reject(error);
+                    }
+                } catch (error) {
+                    logger.error(error);
                     reject(error);
                 }
-            } catch (error) {
-                console.error(new Error(error));
-                reject(error);
-            }
+            });
         });
-    });
-
+    }
 }
-
-module.exports = getUserInfo

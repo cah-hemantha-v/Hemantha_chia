@@ -1,21 +1,18 @@
 'use strict';
 const chia = require('../controllers/chia');
-const jwt = require('jsonwebtoken');
-const okta = require('../controllers/okta');
+const Okta = require('../controllers/okta');
+const logger = require('../utils/logger');
 
-
-// check header or url parameters or post parameters for token
-const getUid = function (request, response, next) {
-    let token = request.headers['authorization'];
-    let chiaOutput = {
+function getUid(request, response, next) {
+    const token = request.headers['authorization'];
+    const chiaOutput = {
         output: {
             text: ['You are not authorized to access this application. Please create a request in ServiceNow for access.']
         }
     }
-    if (!token) {
-        return response.status(200).json(chiaOutput);
-    } else {
-        okta(process.env.OKTA_HOST, token).then((body) => {
+    if (!token) return response.status(200).json(chiaOutput);
+    else {
+        new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
             let oktaResponse = JSON.parse(body);
             request.login_uid = oktaResponse.uid;
             next();
@@ -26,20 +23,23 @@ const getUid = function (request, response, next) {
     }
 }
 
-// Endpoint to be call from the client side
-function getRouter(app) {
-    app.post('/api/message', getUid, function (req, res) {
+module.exports = function getRouter(app) {
+    app.get('/', (req, res) => {
+        res.send('You are not authorized to view this page!!');
+    });
+
+    app.post('/api/message', getUid, (req, res) => {
         let chiaController = new chia();
         chiaController.postWatsonMessage(req).then((rest) => {
-            // console.log(`Watson Response...`)
-            // console.log(rest);
+            const message = rest ? "message was returned" : "mo message included";
+            logger.debug(message)
+            logger.info(`-------------`);
             return res.status(200).json(rest);
-        }, (err) => {
-            console.error(new Error(`Error Occured - ${err}`));
-            return res.status(404).json(err.result.errorMessage);
+        }).catch((err) => {
+            logger.error(err);
+            logger.error(`-------------`);
+            return res.status(404).json(err);
         });
     });
     return app;
 }
-
-module.exports = getRouter;

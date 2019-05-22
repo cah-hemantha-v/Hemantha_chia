@@ -4,7 +4,8 @@
   "description": "NodeJS project created for CHIA for Medical Pricing team.",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node app.js",
+    "start-dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,7 +29,9 @@
     "ibm-watson": "^4.0.2",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.4.0",
-    "request": "^2.88.0"
+    "nodemon": "^1.18.11",
+    "request": "^2.88.0",
+    "winston": "^3.2.1"
   },
   "engines": {
     "node": "10.x.x",
