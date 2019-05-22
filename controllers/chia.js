@@ -38,7 +38,6 @@ module.exports = class ChiaController {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
                 this.watson.setContext("soldtoerr", errMessage.result.errorMessage);
-                this.watson.setContext("soldtoerr", "something unexpected happened");
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     logger.error(this.watson.response);
                     reject(rest);

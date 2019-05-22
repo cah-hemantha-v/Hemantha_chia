@@ -4,10 +4,10 @@ const logger = require('../utils/logger');
 
 module.exports = class iPrice {
     constructor(uid) {
-        this.url = process.env.IPRICE_HOST || 'https://api.stage.cardinalhealth.com';
+        this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
         this.uid = uid || "kararu01";
         this.headers = {
-            'Host': 'api.stage.cardinalhealth.com',
+            'Host': 'api.dev.cardinalhealth.com',
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
