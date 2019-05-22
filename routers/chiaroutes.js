@@ -1,19 +1,19 @@
 'use strict';
 const chia = require('../controllers/chia');
-const okta = require('../controllers/okta');
+const Okta = require('../controllers/okta');
 const logger = require('../utils/logger');
 
-const getUid = function (request, response, next) {
-    let token = request.headers['authorization'];
-    let chiaOutput = {
+function getUid(request, response, next) {
+    const token = request.headers['authorization'];
+    const chiaOutput = {
         output: {
             text: ['You are not authorized to access this application. Please create a request in ServiceNow for access.']
         }
     }
-    if (!token) {
-        return response.status(200).json(chiaOutput);
-    } else {
-        okta(process.env.OKTA_HOST, token).then((body) => {
+    if (!token) return response.status(200).json(chiaOutput);
+    else {
+        okta = new Okta(process.env.OKTA_HOST, token)
+        okta.getUserInfo().then((body) => {
             let oktaResponse = JSON.parse(body);
             request.login_uid = oktaResponse.uid;
             next();
@@ -24,8 +24,7 @@ const getUid = function (request, response, next) {
     }
 }
 
-// Endpoint to be call from the client side
-function getRouter(app) {
+module.exports = function getRouter(app) {
     app.get('/', (req, res) => {
         res.send('You are not authorized to view this page!!');
     });
@@ -45,5 +44,3 @@ function getRouter(app) {
     });
     return app;
 }
-
-module.exports = getRouter;
