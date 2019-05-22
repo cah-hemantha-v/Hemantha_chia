@@ -1,4 +1,3 @@
-//logic to be writted for fetching UID based on logged in user.
 
 var request = require("request");
 
