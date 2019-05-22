@@ -1,54 +1,61 @@
 'use strict';
 const Promise = require('bluebird');
+const logger = require('../utils/logger');
 const request = Promise.promisifyAll(require('request'));
 request.debug;
 
-var GlideRecord = function (instance, tablename, user, password, apiversion) {
-    this.apiversion = apiversion ? apiversion + '/' : '';
-    this.baseurl = 'https://' + instance + '.service-now.com/api/now/' + this.apiversion + 'table/' + tablename;
-    this.user = user;
-    this.pass = password;
-    this.tablename = tablename;
-    this.instance = instance;
-    this.params = {};
-};
+module.exports = class GlideRecord {
+    constructor(table, apiversion) {
+        this.user = process.env.SNOW_UID || 'chia.bot';
+        this.pass = process.env.SNOW_PWD || 'J0hnny5';
+        this.params = {};
+        this.instance = process.env.SNOW_INSTANCE_URL || 'cardinalsand';
+        this.tablename = table;
+        this.apiversion = apiversion? apiversion + '/' : '';
+        this.baseurl = 'https://' + this.instance + '.service-now.com/api/now/' + this.apiversion + 'table/' + this.tablename;
+    }
 
-GlideRecord.prototype = {
-    get: function (sysid) {
+    get(sysid) {
         this.url = this.baseurl + '/' + sysid;
         return request.getAsync(this.reqobj).then(this.plogic);
-    },
-    query: function () {
+    }
+
+    query() {
         this.url = this.baseurl + '?sysparm_display_value=true';
         return request.getAsync(this.reqobj).then(this.plogic);
-    },
-    insert: function (obj) {
+    }
+
+    insert(obj) {
         this.url = this.baseurl + '?sysparm_display_value=true';
         this.body = obj;
         return request.postAsync(this.postobj).then(this.plogic);
-    },
-    update: function (sysid, obj) {
+    }
+
+    update(sysid, obj) {
         this.url = this.baseurl + '/' + sysid;
         this.body = obj;
         return request.patchAsync(this.postobj).then(this.plogic);
-    },
-    delete: function (sysid) {
+    }
+
+    delete(sysid) {
         this.url = this.baseurl + '/' + sysid;
         return request.delAsync(this.reqobj).then(this.dlogic);
-    },
-    clone: function (sysid, clonefields) {
-        var self = this;
+    }
+
+    clone(sysid, clonefields) {
+        let self = this;
         this.setDisplay(true);
         this.params['sysparm_exclude_reference_link'] = true
-        this.get(sysid).then(function (value) {
-            var obj = this.cloneobj(value, clonefields);
-            self.insert(obj).then(function (val) {
-                console.log(val)
+        this.get(sysid).then((value) => {
+            let obj = this.cloneobj(value, clonefields);
+            self.insert(obj).then((val) => {
+                logger.info(val)
             })
         })
-    },
+    }
+
     get reqobj() {
-        var options = {
+        let options = {
             url: this.url || this.baseurl,
             header: {
                 'Accept': 'application/json',
@@ -66,7 +73,8 @@ GlideRecord.prototype = {
             options.proxy = this.proxy
         }
         return options;
-    },
+    }
+
     get postobj() {
         return {
             url: this.url || this.baseurl,
@@ -83,12 +91,12 @@ GlideRecord.prototype = {
             qs: this.params,
             body: this.body
         }
-    },
+    }
 
-    cloneobj: function (obj, clonefields) {
-        var obj = obj
-        var obj1 = {};
-        clonefields.forEach(function (field) {
+    cloneobj(in_obj, clonefields) {
+        let obj = in_obj
+        let obj1 = {};
+        clonefields.forEach((field) => {
             if (obj.hasOwnProperty(field)) {
                 if (typeof obj[field] == 'object') {
                     obj1[field] = obj[field]['value']
@@ -98,90 +106,113 @@ GlideRecord.prototype = {
             }
         })
         return obj1
-    },
-    setProxy: function (url) {
+    }
+
+    setProxy(url) {
         this.proxy = url;
-    },
-    plogic: function (value) {
-        var statuscode = value.statusCode;
+    }
+
+    plogic(value) {
+        let statuscode = value.statusCode;
         if (statuscode == 400 || statuscode == 404 || statuscode == 401 || statuscode == 403) {
             return Promise.reject(value.body)
         }
         return Promise.resolve(value.body.result);
-    },
+    }
 
-    dlogic: function (value) {
-        var statuscode = value.statusCode;
+    dlogic(value) {
+        let statuscode = value.statusCode;
         if (statuscode == 400 || statuscode == 404 || statuscode == 401 || statuscode == 403) {
             return Promise.reject("Delete failed")
         }
         return Promise.resolve("Delete success");
-    },
-    addEncodedQuery: function (value) {
+    }
+
+    addEncodedQuery(value) {
         this.params.sysparm_query = value;
-    },
-    setEncodedQuery: function (value) {
+    }
+
+    setEncodedQuery(value) {
         this.params.sysparm_query = value;
-    },
-    setLimit: function (value) {
+    }
+
+    setLimit(value) {
         this.params.sysparm_limit = value
-    },
-    setReturnFields: function (value) {
+    }
+
+    setReturnFields(value) {
         this.params.sysparm_fields = value;
-    },
-    setDisplay: function (value) {
+    }
+
+    setDisplay(value) {
         this.params.sysparm_display_value = value;
-    },
-    setView: function (value) {
+    }
+
+    setView(value) {
         this.params.sysparm_view = value;
-    },
-    setOffset: function (value) {
+    }
+
+    setOffset(value) {
         this.params.sysparm_offset = value;
-    },
-    setExcludeReference: function (value) {
+    }
+
+    setExcludeReference(value) {
         this.params.sysparm_exclude_reference_link = value;
-    },
+    }
+
     set limit(value) {
         this.params.sysparm_limit = value
-    },
+    }
+
     set returnFields(value) {
         this.params.sysparm_fields = value;
-    },
+    }
+
     set display(value) {
         this.params.sysparm_display_value = value;
-    },
+    }
+
     set view(value) {
         this.params.sysparm_view = value;
-    },
+    }
+
     set offset(value) {
         this.params.sysparm_offset = value;
-    },
+    }
+
     set excludeReference(value) {
         this.params.sysparm_exclude_reference_link;
-    },
+    }
+
     set encodedQuery(str) {
         this.params.sysparm_query = value;
-    },
+    }
+
     get encodedQuery() {
         return this.params.sysparm_query;
-    },
+    }
+
     get limit() {
         return this.params.sysparm_limit
-    },
+    }
+
     get returnFields() {
         return this.params.sysparm_fields;
-    },
+    }
+
     get display() {
         return this.params.sysparm_display_value;
-    },
+    }
+
     get view() {
         return this.params.sysparm_view;
-    },
+    }
+
     get offset() {
         return this.params.sysparm_offset;
-    },
+    }
+
     get excludeReference() {
         return this.params.sysparm_exclude_reference_link;
     }
-}
-module.exports = GlideRecord;
+};

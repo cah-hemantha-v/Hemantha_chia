@@ -1,22 +1,22 @@
 swagger: "2.0"
 info:
   title: Medical Pricing Bot API
-  description: API to make chat conversations with CHIA for Med Pricing. 
+  description: API to make chat conversations with CHIA for Med Pricing.
   version: "0.0.1"
-  contact: 
-    email: arunanand.karunakaran@cardinalhealth.com 
+  contact:
+    email: arunanand.karunakaran@cardinalhealth.com
 host: chia-med-pricing.apps.cf.np.cahcloud.com
 basePath: /api/message
 schemes:
   - https
 consumes:
- - application/json
+  - application/json
 produces:
   - application/json
 paths:
   '/api/medpricing':
     post:
-      summary: 
+      summary:
       description: CHIA PCF endpoint for Medical Pricing
       operationId: hello
       responses:
