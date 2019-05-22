@@ -17,7 +17,7 @@ module.exports = class ServiceNow {
                     resolve(result[0].user_name);
                 } else {
                     logger.debug('err - ' + result);
-                    resolve('kararu01');
+                    reject(result);
                 }
             }).catch((err) => {
                 logger.error(`Not able to fetch user properties`);
