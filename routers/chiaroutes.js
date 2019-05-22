@@ -21,7 +21,6 @@ const getUid = function (request, response, next) {
             next();
         }).catch((err) => {
             console.error(new Error(err));
-
             return response.status(200).json(chiaOutput);
         });
     }
