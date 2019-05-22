@@ -29,6 +29,8 @@ class ChiaController {
                             dc.push(`${element.id} - ${element.description}`);
                         });
                         data.context.dist_channel = dc;
+                        data.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: ${soldTo.result.customerName}</div>`;
+                        data.output.text[1] = `<div>What is the distribution channel you would like to choose?</div>`
                         if (dc.length > 0) {
                             data.output.chiapayload = [{
                                 'type': 'button',
