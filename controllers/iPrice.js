@@ -4,18 +4,19 @@ const logger = require('../utils/logger');
 
 module.exports = class iPrice {
     constructor(uid) {
-        this.url = 'https://'+process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
-        this.uid = uid || "kararu01";
+        this.url = process.env.IPRICE_HOST || 'http://iprice.dev.cardinalhealth.net';
+        this.uid = uid;
         this.headers = {
-            'Host': 'api.dev.cardinalhealth.com',
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
+            'Authorization': 'Basic '+ process.env.IPRICE_CREDS
+            //'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
         }
     }
 
     setUid(uid) {
+        this.headers.uid = uid;
         this.uid = uid;
     }
 
@@ -38,7 +39,7 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-
+            logger.debug(options);
             request(options, (error, response, body) => {
                 if (!error) {
                     if (response.statusCode == 200) resolve(response.body);
@@ -51,7 +52,7 @@ module.exports = class iPrice {
     checkSoldToCustomer(soldto) {
         logger.debug("inside check sold to customer method");
         return new Promise((resolve, reject) => {
-            const customerUrl = `${this.url}/medical-iprice-customer`;
+            const customerUrl = `${this.url}/iprice/api/customer`;
             const qs = {
                 customerNumber: soldto
             };
@@ -61,7 +62,7 @@ module.exports = class iPrice {
 
     checkMaterialNum(matNum) {
         logger.debug("inside check material num method");
-        const materialUrl = `${this.url}/medical-iprice-material`;
+        const materialUrl = `${this.url}/iprice/api/material`;
         const qs = {
             materialNumber: matNum
         };
@@ -70,7 +71,7 @@ module.exports = class iPrice {
 
     checkExistingPrice(priceQuote) {
         logger.debug("inside check existing price method");
-        const pricequoteUrl = `${this.url}/medical-iprice-proposal`;
+        const pricequoteUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
             customerNumber: priceQuote.soldto,
             materialNumber: priceQuote.cah_material,
@@ -83,7 +84,7 @@ module.exports = class iPrice {
 
     checkProposalStatus(ProposalNumber) {
         logger.debug("inside check propsosal status method");
-        const ProposalNumberUrl = `${this.url}/medical-iprice-proposal/status`;
+        const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
             proposalId: ProposalNumber,
             returnLimit: 10

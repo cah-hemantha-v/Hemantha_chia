@@ -195,7 +195,7 @@ module.exports = class ChiaController {
         return new Promise((resolve, reject) => {
 
             this.watson.setRequest(request);
-            this.iprice.setUid(this.watson.request.login_uid || 'kararu01');
+            this.iprice.setUid(this.watson.request.login_uid);
 
             this.watson.watsonPostMessage().then((watsonResponse) => {
                 this.watson.setResponse(watsonResponse);
