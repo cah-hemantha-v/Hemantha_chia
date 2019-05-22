@@ -1,5 +1,6 @@
-//logic to be writted for fetching UID based on logged in user.
-var request = require("request");
+'use strict';
+const request = require("request");
+const logger = require("../utils/logger");
 
 module.exports = class Okta {
     constructor(host, token) {
