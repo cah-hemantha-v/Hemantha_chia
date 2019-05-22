@@ -17,6 +17,7 @@ module.exports = class iPrice {
 
     setUid(uid) {
         this.uid = uid;
+        this.headers.uid = uid;
     }
 
     getIPrice(url, qs) {

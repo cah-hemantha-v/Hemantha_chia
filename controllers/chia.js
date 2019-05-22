@@ -10,6 +10,34 @@ module.exports = class ChiaController {
         this.watson = new watson();
     }
 
+    membershipCheckSoldTo() {
+        logger.debug("inside membership check SoldTo method");
+        return new Promise((resolve, reject) => {
+            this.watson.setContext("MembershipCheckSoldto", false);
+            const sold_to = this.watson.getContext("soldto");
+
+            this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
+                this.watson.setContext("counter", 0);
+                this.watson.setContext("soldtoerr", false);
+                const customer = JSON.parse(soldToBody);
+
+                logger.info(customer);
+
+                resolve(this.watson.response);
+            }).catch((err) => {
+                logger.error(err);
+                const errMessage = JSON.parse(err);
+                this.watson.setContext("soldtoerr", errMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    logger.error(this.watson.response);
+                    reject(rest);
+                });
+            });
+        }).then((result) => {
+            return result;
+        })
+    }
+
     checkSoldTo() {
         logger.debug("inside check SoldTo method");
         return new Promise((resolve, reject) => {
@@ -200,6 +228,7 @@ module.exports = class ChiaController {
             this.watson.watsonPostMessage().then((watsonResponse) => {
                 this.watson.setResponse(watsonResponse);
                 if (this.watson.getContext("CheckSoldto")) resolve(this.checkSoldTo());
+                else if (this.watson.getContext("MembershipCheckSoldto")) resolve(this.membershipCheckSoldTo());
                 else if (this.watson.getContext("CheckMaterial")) resolve(this.CheckMaterial());
                 else if (this.watson.getContext("getPriceQuote")) resolve(this.getPriceQuote());
                 else if (this.watson.getContext("Check_Proposal")) resolve(this.checkProposal());
