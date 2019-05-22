@@ -18,4 +18,4 @@ applications:
     OKTA_HOST: cardinalpreprdb2e.oktapreview.com
 routes:
   - route: mp-chia-stg.apps.cf.np.gc.cahcloud.net
-command: node server.js
+command: npm run start
