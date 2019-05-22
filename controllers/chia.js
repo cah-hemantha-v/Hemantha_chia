@@ -102,13 +102,21 @@ class ChiaController {
                     getPQ.then((priceQuote) => {
                         let pq = JSON.parse(priceQuote);
                         console.log(`final quote -- ${pq}`);
-                        let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                        let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
-                            ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                        let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
-                        data.output.text[0] = priceResponse;
-                        //data.output.text[1] = tierResponse;
-                        data.output.text[1] = `To check another price, just hit refresh.`
+                        if(pq.result.isPriceQuoteInvalid){
+                            data.output.text[0] = `PriceQuote is Invalid, ${pq.result.priceQuoteMessageText}`;
+                            data.output.text[1] = `To check another price, just hit refresh.`
+                        } else if(!pq.result.isPriceQuoteAvailable){
+                            data.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
+                            data.output.text[1] = `To check another price, just hit refresh.`
+                        } else{
+                            let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
+                            let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                                ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
+                            let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
+                            data.output.text[0] = priceResponse;
+                            data.output.text[1] = tierResponse;
+                            data.output.text[2] = `To check another price, just hit refresh.`
+                        }
                         resolve(data);
                     }, (err) => {
                         console.error(new Error(`Error Occured during Price Quote Check - ${err}`));
@@ -156,11 +164,13 @@ class ChiaController {
                     }, (err) => {
                         console.error(new Error(err));
                         let errMessage = JSON.parse(err);
-                        data.output.text[0] = `${errMessage.result.errorMessage}`;
-                        data.output.text[1] = `Can you please provide a valid proposal number?`;
+                        //data.output.text[0] = `${errMessage.result.errorMessage}`;
+                        //data.output.text[1] = `Can you please provide a valid proposal number?`;
                         //data.context.proposal_number = null
-                        data.context.proposalerr = errMessage.result.errorMessage;
-                        resolve(data);
+                        data.context.proposalerr = `${data.context.proposal_number} is an ${errMessage.result.errorMessage}`;
+                        this.watsonCall.watsonPostMessage(data).then((rest) => {
+                            resolve(rest);
+                        });
                     });
                 } else {
                     resolve(data);
