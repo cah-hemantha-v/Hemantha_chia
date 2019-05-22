@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 
 module.exports = class iPrice {
     constructor(uid) {
-        this.url = process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
+        this.url = 'https://'+process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
         this.uid = uid || "kararu01";
         this.headers = {
             'Host': 'api.dev.cardinalhealth.com',
@@ -42,7 +42,7 @@ module.exports = class iPrice {
             request(options, (error, response, body) => {
                 if (!error) {
                     if (response.statusCode == 200) resolve(response.body);
-                    else if (response.statusCode == 404) reject(response.body);
+                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401) reject(response.body);
                 } else reject(error);
             });
         });

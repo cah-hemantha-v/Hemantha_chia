@@ -1,30 +1,27 @@
 'use strict';
 const chia = require('../controllers/chia');
-const jwt = require('jsonwebtoken');
-const servicenow = require('../controllers/snowhelper');
+const okta = require('../controllers/okta');
 const logger = require('../utils/logger');
 
-const sNow = new servicenow();
-const getUid = (request, response, next) => {
-    var token = request.headers['authorization'];
-    if (!token) return next();
-    //token = token.replace('Bearer ', '');
-    // get the decoded payload and header
-    var decoded = jwt.decode(token, {
-        complete: true
-    });
-    //decoded.payload.sub
-    sNow.getUserProfile(decoded.payload.sub).then((uid) => {
-        logger.debug(`uid--${uid}`);
-        if (!uid) {
-            response.status(401).send({
-                "success": false,
-                "error": "An authorization header is required"
-            });
+const getUid = function (request, response, next) {
+    let token = request.headers['authorization'];
+    let chiaOutput = {
+        output: {
+            text: ['You are not authorized to access this application. Please create a request in ServiceNow for access.']
         }
-        request.login_uid = uid;
-    });
-    next();
+    }
+    if (!token) {
+        return response.status(200).json(chiaOutput);
+    } else {
+        okta(process.env.OKTA_HOST, token).then((body) => {
+            let oktaResponse = JSON.parse(body);
+            request.login_uid = oktaResponse.uid;
+            next();
+        }).catch((err) => {
+            console.error(new Error(err));
+            return response.status(200).json(chiaOutput);
+        });
+    }
 }
 
 // Endpoint to be call from the client side
