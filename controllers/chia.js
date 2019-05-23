@@ -28,6 +28,9 @@ module.exports = class ChiaController {
                 });
 
                 this.watson.setContext("dist_channel", dc);
+                this.watson.response.output.text[0]=`<div>Here is the customer you have entered:</div><div> 
+                Customer: <b>${customer.result.customerName}</b></div>`
+                this.watson.response.output.text[1]='Please select the distribution channel';
                 if (dc.length > 0) {
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
