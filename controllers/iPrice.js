@@ -4,14 +4,13 @@ const logger = require('../utils/logger');
 
 module.exports = class iPrice {
     constructor(uid) {
-        this.url = 'https://'+process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
-        this.uid = uid || "kararu01";
+        this.url = process.env.IPRICE_HOST || 'http://iprice.dev.cardinalhealth.net';
+        this.uid = uid;
         this.headers = {
-            'Host': 'api.dev.cardinalhealth.com',
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
+            'Authorization': 'Basic '+ process.env.IPRICE_CREDS
         }
     }
 
@@ -39,11 +38,12 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-
+            logger.debug(options);
             request(options, (error, response, body) => {
                 if (!error) {
+                    logger.info(response.statusCode);
                     if (response.statusCode == 200) resolve(response.body);
-                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401) reject(response.body);
+                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
                 } else reject(error);
             });
         });
@@ -52,7 +52,7 @@ module.exports = class iPrice {
     checkSoldToCustomer(soldto) {
         logger.debug("inside check sold to customer method");
         return new Promise((resolve, reject) => {
-            const customerUrl = `${this.url}/medical-iprice-customer`;
+            const customerUrl = `${this.url}/iprice/api/customer`;
             const qs = {
                 customerNumber: soldto
             };
@@ -62,7 +62,7 @@ module.exports = class iPrice {
 
     checkMaterialNum(matNum) {
         logger.debug("inside check material num method");
-        const materialUrl = `${this.url}/medical-iprice-material`;
+        const materialUrl = `${this.url}/iprice/api/material`;
         const qs = {
             materialNumber: matNum
         };
@@ -71,7 +71,7 @@ module.exports = class iPrice {
 
     checkExistingPrice(priceQuote) {
         logger.debug("inside check existing price method");
-        const pricequoteUrl = `${this.url}/medical-iprice-proposal`;
+        const pricequoteUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
             customerNumber: priceQuote.soldto,
             materialNumber: priceQuote.cah_material,
@@ -84,11 +84,21 @@ module.exports = class iPrice {
 
     checkProposalStatus(ProposalNumber) {
         logger.debug("inside check propsosal status method");
-        const ProposalNumberUrl = `${this.url}/medical-iprice-proposal/status`;
+        const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
             proposalId: ProposalNumber,
             returnLimit: 10
         };
         return this.getIPrice(ProposalNumberUrl, qs);
+    }
+
+    checkMembershipAgreement(soldto, material) {
+        logger.debug("inside check membership agreement method");
+        const membershipUrl = `${this.url}/iprice/api/contract`;
+        const qs = {
+            customerNumber: soldto,
+            materialNumber: material
+        };
+        return this.getIPrice(membershipUrl, qs);
     }
 }

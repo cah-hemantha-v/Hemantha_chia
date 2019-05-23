@@ -19,15 +19,16 @@ module.exports = class ChiaController {
             this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
                 this.watson.setContext("counter", 0);
                 this.watson.setContext("soldtoerr", false);
+
                 const customer = JSON.parse(soldToBody);
 
-                logger.info(customer);
-
+                this.watson.setContext("customer_name", customer.result.customerName);
+                this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div> Customer: <b>${customer.result.customerName}</b></div>`
+                this.watson.response.output.text[1] = `What is the CAH Material for which you would like to get the eligibility details?`;
                 resolve(this.watson.response);
             }).catch((err) => {
-                logger.error(err);
-                const errMessage = JSON.parse(err);
-                this.watson.setContext("soldtoerr", errMessage);
+                logger.error(JSON.parse(err));
+                this.watson.setContext("soldtoerr", JSON.parse(err).result.errorMessage);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     logger.error(this.watson.response);
                     reject(rest);
@@ -35,6 +36,76 @@ module.exports = class ChiaController {
             });
         }).then((result) => {
             return result;
+        })
+    }
+
+    membershipCheckMaterial() {
+        logger.debug(`inside check material method`);
+        return new Promise((resolve, reject) => {
+            this.watson.setContext("MembershipCheckMaterial", false);
+            this.watson.setContext("matNumErr", false);
+
+            const cah_material = this.watson.getContext("cah_material");
+
+            this.iprice.checkMaterialNum(cah_material).then((matNumBody) => {
+                this.watson.setContext("counter", 0);
+                const response = JSON.parse(matNumBody).result;
+                const vendor_name = response.vendorName;
+                const material_description = response.materialDescription;
+                this.watson.setContext("material_return", `<div>Here is the material information for the Material Number you entered:</div><div><b>Vendor Name:</b> ${vendor_name}</div><div><b>Material Description:</b> ${material_description}</div>`);
+                return this.watson.response;
+            }).then((data) => {
+                resolve(this.checkMembershipAgreement());
+            }).catch((err) => {
+                logger.error(err);
+                const error_message = `${this.watson.response.context.cah_material} is an ${err.result.errorMessage}`;
+                this.watson.setContext('matNumErr', error_message);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    reject(rest);
+                });
+            });
+        }).then((result) => {
+            return result;
+        }).catch((err) => {
+            return err;
+        })
+    }
+
+    checkMembershipAgreement() {
+        logger.debug(`inside check membership agreement method`);
+        return new Promise((resolve, reject) => {
+            this.watson.setContext("CheckMaterial", false);
+            this.watson.setContext("matNumErr", false);
+
+            const cah_material = this.watson.getContext("cah_material");
+            const soldto = this.watson.getContext("soldto");
+
+            this.iprice.checkMembershipAgreement(soldto, cah_material).then((response) => {
+                this.watson.setContext("counter", 0);
+                const agreement = JSON.parse(response).result[0];
+                // 'This constumer material combination is also eligible on teh following contracts:<parameters>Cardinal Agreement, Cost Description, Cost External Description, Contract Cost, <pagination>'
+                logger.info("agreement");
+                logger.info(agreement);
+                logger.info(agreement.primaryAgreement);
+                this.watson.response.output.text[0] = this.watson.getContext("material_return")
+                if (!agreement.primaryAgreement) {
+                    this.watson.response.output.text[1] = `Item is not currently accessing a primary agreement ie non-contracted`
+                } else {
+                    const contract_number = agreement.agreementNumber;
+                    const contract_type = agreement.agreementCategoryType;
+                    const eligible_start_date = agreement.agreementMaterialValidFromDateDisplay;
+                    const eligible_end_date = agreement.agreementMaterialValidToDateDisplay;
+                    this.watson.response.output.text[1] = `Winning price for soldto ${soldto} and material ${cah_material} comes from ${contract_type} ${contract_number}, effective from ${eligible_start_date} to ${eligible_end_date}`
+                }
+                this.watson.response.output.text[2] = `Would you like to check another membership request?`
+                resolve(this.watson.response);
+            }).catch((err) => {
+                logger.error(JSON.parse(err));
+                this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err}`;
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    reject(rest);
+                });
+            });
         })
     }
 
@@ -56,6 +127,9 @@ module.exports = class ChiaController {
                 });
 
                 this.watson.setContext("dist_channel", dc);
+                this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>
+                Customer: <b>${customer.result.customerName}</b></div>`
+                this.watson.response.output.text[1] = 'Please select the distribution channel';
                 if (dc.length > 0) {
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
@@ -223,12 +297,13 @@ module.exports = class ChiaController {
         return new Promise((resolve, reject) => {
 
             this.watson.setRequest(request);
-            this.iprice.setUid(this.watson.request.login_uid || 'kararu01');
+            this.iprice.setUid(this.watson.request.login_uid);
 
             this.watson.watsonPostMessage().then((watsonResponse) => {
                 this.watson.setResponse(watsonResponse);
                 if (this.watson.getContext("CheckSoldto")) resolve(this.checkSoldTo());
                 else if (this.watson.getContext("MembershipCheckSoldto")) resolve(this.membershipCheckSoldTo());
+                else if (this.watson.getContext("MembershipCheckMaterial")) resolve(this.membershipCheckMaterial());
                 else if (this.watson.getContext("CheckMaterial")) resolve(this.CheckMaterial());
                 else if (this.watson.getContext("getPriceQuote")) resolve(this.getPriceQuote());
                 else if (this.watson.getContext("Check_Proposal")) resolve(this.checkProposal());
