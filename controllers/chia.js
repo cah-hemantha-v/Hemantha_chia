@@ -120,10 +120,21 @@ module.exports = class ChiaController {
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
-                const priceLocked = pq.result.currentPriceLockedIndicator == 'YES' ? 'locked' : 'unlocked';
-                const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                this.watson.response.output.text[0] = priceResponse;
-                this.watson.response.output.text[1] = `To check another price, just hit refresh.`
+                if(pq.result.isPriceQuoteInvalid){
+                    this.watson.response.output.text[0] = `PriceQuote is Invalid, ${pq.result.priceQuoteMessageText}`;
+                    this.watson.response.output.text[1] = `To check another price, just hit refresh.`
+                } else if(!pq.result.isPriceQuoteAvailable){
+                    this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
+                    this.watson.response.output.text[1] = `To check another price, just hit refresh.`
+                } else{
+                    let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
+                    let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
+                    let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${(pq.result.supplierAgreementDescription=='') ? '' : pq.result.supplierAgreementDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
+                    this.watson.response.output.text[0] = priceResponse;
+                    this.watson.response.output.text[1] = tierResponse;
+                    this.watson.response.output.text[2] = `To check another price, just hit refresh.`
+                }
                 resolve(this.watson.response);
             }, (err) => {
                 logger.error(`Error Occured during Price Quote Check`);
@@ -183,10 +194,13 @@ module.exports = class ChiaController {
             }, (err) => {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
-                this.watson.response.output.text[0] = `${errMessage.result.errorMessage}`;
-                this.watson.response.output.text[1] = `Can you please provide a valid proposal number?`;
-                this.watson.response.context.proposalerr = errMessage.result.errorMessage;
-                reject(this.watson.response);
+                //data.output.text[0] = `${errMessage.result.errorMessage}`;
+                //data.output.text[1] = `Can you please provide a valid proposal number?`;
+                //data.context.proposal_number = null
+                this.watson.response.context.proposalerr = `${watson.response.context.proposal_number} is an ${errMessage.result.errorMessage}`;
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    reject(rest);
+                });
             });
         }).then((result) => {
             return result;
