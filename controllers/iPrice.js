@@ -1,80 +1,94 @@
 'use strict';
 const request = require("request");
+const logger = require('../utils/logger');
 
-class iPrice {
+module.exports = class iPrice {
     constructor(uid) {
-        this.url = 'https://'+process.env.IPRICE_HOST || 'https://api.dev.cardinalhealth.com';
+        this.url = process.env.IPRICE_HOST || 'http://iprice.dev.cardinalhealth.net';
+        this.uid = uid;
+        this.headers = {
+            'uid': this.uid,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Basic '+ process.env.IPRICE_CREDS
+            //'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
+        }
     }
 
-    createIPricePost(url, qs, method, uid) {
+    setUid(uid) {
+        this.uid = uid;
+        this.headers.uid = uid;        
+    }
+
+    getIPrice(url, qs) {
+        logger.debug("inside get iprice method");
+        return this.createIPricePost(url, qs, "GET");
+    }
+
+    PostIPrice(url, qs) {
+        logger.debug("inside post iprice method");
+        return this.createIPricePost(url, qs, "POST");
+    }
+
+    createIPricePost(url, qs, method) {
+        logger.debug("inside create iprice post method");
         return new Promise((resolve, reject) => {
-            console.log(`iprice uid = ${uid}`);
-            var options = {
+            const options = {
                 method: method,
                 url: url,
                 qs: qs,
-                headers: {
-                    'Host': process.env.IPRICE_HOST,
-                    'uid': uid,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
-                }
+                headers: this.headers
             };
-            request(options, function (error, response, body) {
+            logger.debug(options);
+            request(options, (error, response, body) => {
                 if (!error) {
-                    if (response.statusCode == 200) {
-                        resolve(response.body);
-                    } else if (response.statusCode == 404) {
-                        reject(response.body);
-                    } else if (response.statusCode == 403 || response.statusCode == 401) {
-                        reject(response.body);
-                    }
-                }
+                    if (response.statusCode == 200) resolve(response.body);
+                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401) reject(response.body);
+                } else reject(error);
             });
         });
     }
 
-    checkSoldToCustomer(soldto, uid) {
-        console.log(`sold to received -- ${soldto}`);
-        let customerUrl = `${this.url}` + '/medical-iprice-customer';
-        console.log(customerUrl);
-        let qs = {
-            customerNumber: soldto
-        };
-        return this.createIPricePost(customerUrl, qs, 'GET', uid);
+    checkSoldToCustomer(soldto) {
+        logger.debug("inside check sold to customer method");
+        return new Promise((resolve, reject) => {
+            const customerUrl = `${this.url}/iprice/api/customer`;
+            const qs = {
+                customerNumber: soldto
+            };
+            resolve(this.getIPrice(customerUrl, qs));
+        })
     }
 
-    checkMaterialNum(matNum, uid) {
-        console.log(`Received Mat num -- ${matNum}`);
-        let materialUrl = `${this.url}` + '/medical-iprice-material';
-        let qs = {
+    checkMaterialNum(matNum) {
+        logger.debug("inside check material num method");
+        const materialUrl = `${this.url}/iprice/api/material`;
+        const qs = {
             materialNumber: matNum
         };
-        return this.createIPricePost(materialUrl, qs, 'GET', uid);
+        return this.getIPrice(materialUrl, qs);
     }
 
-    checkExistingPrice(priceQuote, uid) {
-        let qs = {
+    checkExistingPrice(priceQuote) {
+        logger.debug("inside check existing price method");
+        const pricequoteUrl = `${this.url}/iprice/api/proposal`;
+        const qs = {
             customerNumber: priceQuote.soldto,
             materialNumber: priceQuote.cah_material,
             um: priceQuote.selected_uom,
             asOfDate: priceQuote.selected_date,
             dc: priceQuote.selected_dc
         };
-        let pricequoteUrl = `${this.url}` + '/medical-iprice-proposal';
-        return this.createIPricePost(pricequoteUrl, qs, 'POST', uid);
+        return this.PostIPrice(pricequoteUrl, qs);
     }
 
-    checkProposalStatus(ProposalNumber, uid) {
-        console.log(`prop-${uid}`);
-        let qs = {
+    checkProposalStatus(ProposalNumber) {
+        logger.debug("inside check propsosal status method");
+        const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
+        const qs = {
             proposalId: ProposalNumber,
             returnLimit: 10
         };
-        let ProposalNumberUrl = `${this.url}` + `/medical-iprice-proposal/status`;
-        return this.createIPricePost(ProposalNumberUrl, qs, 'GET', uid);
+        return this.getIPrice(ProposalNumberUrl, qs);
     }
 }
-
-module.exports = iPrice;
