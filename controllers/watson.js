@@ -16,18 +16,15 @@ module.exports = class Watson {
         });
     }
 
-    watsonPostMessage() {
+    watsonPostMessage(body) {
         return new Promise((resolve, reject) => {
             logger.debug("inside watsonpostmessage method");
-
             const payload = {
                 workspace_id: this.workspace_id,
-                context: this.request.body.context || {},
-                input: this.request.body.input || {}
+                context: body.context || {},
+                input: body.input || {}
             };
-
             logger.info(`Workspace ID -- ${JSON.stringify(payload)}`);
-
             this.assistant.message(payload, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);

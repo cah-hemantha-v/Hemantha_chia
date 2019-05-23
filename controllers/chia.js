@@ -15,41 +15,47 @@ module.exports = class ChiaController {
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
             const sold_to = this.watson.getContext("soldto");
-
             this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
                 this.watson.setContext("counter", 0);
                 this.watson.setContext("soldtoerr", false);
                 const customer = JSON.parse(soldToBody);
                 const distChannels = customer.result.distributionChannelIds;
                 let dc = [];
-
                 distChannels.forEach(element => {
                     dc.push(`${element.id} - ${element.description}`);
                 });
-
                 this.watson.setContext("dist_channel", dc);
-                this.watson.response.output.text[0]=`<div>Here is the customer you have entered:</div><div> 
-                Customer: <b>${customer.result.customerName}</b></div>`
-                this.watson.response.output.text[1]='Please select the distribution channel';
-                if (dc.length > 0) {
+                if (dc.length > 1) {
+                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div>` +
+                        `<div>Customer: <b>${customer.result.customerName}</b></div>`;
+                    this.watson.response.output.text[1] = 'Please select the distribution channel';
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
                         'values': dc
                     }];
+                    resolve(this.watson.response);
+                } else if (dc.length == 1) {
+                    this.watson.response.input.text = dc.toString();
+                    this.watson.response.context.singleDc = true;
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        logger.info(`Customer got one DC`);
+                        logger.info(rest);
+                        resolve(rest);
+                    });
                 }
-                resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
                 this.watson.setContext("soldtoerr", errMessage.result.errorMessage);
+                logger.info(`priting error response..`)
+                logger.info(this.watson.response);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    logger.error(this.watson.response);
-                    reject(rest);
+                    logger.error(`Priting error skip input response`);
+                    logger.error(rest);
+                    resolve(rest);
                 });
             });
-        }).then((result) => {
-            return result;
-        })
+        });
     }
 
     CheckMaterial() {
@@ -59,7 +65,6 @@ module.exports = class ChiaController {
             this.watson.response.context.matNumErr = false;
 
             const cah_material = this.watson.getContext("cah_material");
-
             this.iprice.checkMaterialNum(cah_material).then((matNumBody) => {
                 let matNum = JSON.parse(matNumBody);
                 let uom = matNum.result.unitOfMeasures;
@@ -104,14 +109,10 @@ module.exports = class ChiaController {
                 let errMessage = JSON.parse(err);
                 this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${errMessage.result.errorMessage}`;
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    reject(rest);
+                    resolve(rest);
                 });
             });
-        }).then((result) => {
-            return result;
-        }).catch((err) => {
-            return err;
-        })
+        });
     }
 
     getPriceQuote() {
@@ -130,10 +131,6 @@ module.exports = class ChiaController {
                 logger.error(err);
                 reject(err);
             })
-        }).then((result) => {
-            return result;
-        }).catch((err) => {
-            return err;
         })
     }
 
@@ -145,7 +142,7 @@ module.exports = class ChiaController {
 
             const iPriceUrl = 'http://iprice.dev.cardinalhealth.net';
             const proposal_number = this.watson.getContext("proposal_number");
-
+            logger.info(`Proposal# Identified - ${proposal_number}`);
             this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
                 const prop_stat = JSON.parse(proposalResponse);
                 let payloadArray = [];
@@ -178,7 +175,7 @@ module.exports = class ChiaController {
                         `</tr><tr><td>Customer Name</td><td>${element.customerName}</td></tr><tr><td>Material Count</td><td>${element.totalLineCount}</td></tr><tr><td>Proposal Load Status</td><td>${element.loadStatusDesc}</td></tr></tbody></table>`
                     );
                 });
-                this.watson.setContext("chiapayload", payloadArray);
+                this.watson.response.output.chiapayload = payloadArray;
                 resolve(this.watson.response);
             }, (err) => {
                 logger.error(err);
@@ -188,19 +185,15 @@ module.exports = class ChiaController {
                 this.watson.response.context.proposalerr = errMessage.result.errorMessage;
                 reject(this.watson.response);
             });
-        }).then((result) => {
-            return result;
         });
     }
 
     postWatsonMessage(request) {
         logger.debug(`watson input`);
         return new Promise((resolve, reject) => {
-
             this.watson.setRequest(request);
             this.iprice.setUid(this.watson.request.login_uid);
-
-            this.watson.watsonPostMessage().then((watsonResponse) => {
+            this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
                 this.watson.setResponse(watsonResponse);
                 if (this.watson.getContext("CheckSoldto")) resolve(this.checkSoldTo());
                 else if (this.watson.getContext("CheckMaterial")) resolve(this.CheckMaterial());

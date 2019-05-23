@@ -10,14 +10,14 @@ module.exports = class iPrice {
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': 'Basic '+ process.env.IPRICE_CREDS
+            'Authorization': 'Basic ' + process.env.IPRICE_CREDS
             //'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
         }
     }
 
     setUid(uid) {
         this.uid = uid;
-        this.headers.uid = uid;        
+        this.headers.uid = uid;
     }
 
     getIPrice(url, qs) {
