@@ -293,9 +293,6 @@ module.exports = class ChiaController {
             }, (err) => {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
-                //data.output.text[0] = `${errMessage.result.errorMessage}`;
-                //data.output.text[1] = `Can you please provide a valid proposal number?`;
-                //data.context.proposal_number = null
                 this.watson.response.context.proposalerr = `${watson.response.context.proposal_number} is an ${errMessage.result.errorMessage}`;
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     reject(rest);
