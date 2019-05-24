@@ -6,7 +6,7 @@ module.exports = class Watson {
         this.request = request || {};
         this.response = response || {};
         this.version = '2018-02-16';
-        this.workspace_id = process.env.WORKSPACE_ID || 'c6d87b7f-c012-4a4d-91bc-e7985605fc29';
+        this.workspace_id = process.env.WORKSPACE_ID;
         this.url = 'https://gateway.watsonplatform.net/assistant/api';
         this.iam_apikey = process.env.WATSON_APIKEY || 'ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr';
         this.assistant = new AssistantV1({
@@ -16,16 +16,15 @@ module.exports = class Watson {
         });
     }
 
-    watsonPostMessage() {
+    watsonPostMessage(body) {
         return new Promise((resolve, reject) => {
             logger.debug("inside watsonpostmessage method");
-
             const payload = {
                 workspace_id: this.workspace_id,
-                context: this.request.body.context || {},
-                input: this.request.body.input || {}
+                context: body.context || {},
+                input: body.input || {}
             };
-
+            logger.info(`Workspace ID -- ${JSON.stringify(payload)}`);
             this.assistant.message(payload, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
