@@ -23,7 +23,7 @@ module.exports = class ChiaController {
                 const customer = JSON.parse(soldToBody);
 
                 this.watson.setContext("customer_name", customer.result.customerName);
-                this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div> Customer: <b>${customer.result.customerName}</b></div>`
+                this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div> Customer: <b>${customer.result.customerName}</b> - <b>${sold_to}</b></div>`
                 this.watson.response.output.text[1] = `What is the CAH Material for which you would like to get the eligibility details?`;
                 resolve(this.watson.response);
             }).catch((err) => {
