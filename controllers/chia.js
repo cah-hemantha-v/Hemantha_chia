@@ -214,11 +214,12 @@ module.exports = class ChiaController {
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
-                if (pq.result.isPriceQuoteInvalid) {
-                    this.watson.response.output.text[0] = `PriceQuote is Invalid, ${pq.result.priceQuoteMessageText}`;
-                    this.watson.response.output.text[1] = `To check another price, just hit refresh.`
-                } else if (!pq.result.isPriceQuoteAvailable) {
+                logger.warn(pq);
+                if (!pq.result.isPriceQuoteAvailable) {
                     this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
+                    this.watson.response.output.text[1] = `To check another price, just hit refresh.`
+                } else if (pq.result.isPriceQuoteInvalid) {
+                    this.watson.response.output.text[0] = `${pq.result.priceQuoteMessageText}`;
                     this.watson.response.output.text[1] = `To check another price, just hit refresh.`
                 } else {
                     let tierResponse = '';
