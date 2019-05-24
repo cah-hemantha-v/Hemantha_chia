@@ -177,13 +177,13 @@ module.exports = class ChiaController {
                 });
                 this.watson.response.output.chiapayload = payloadArray;
                 resolve(this.watson.response);
-            }, (err) => {
+            }).catch((err) => {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
                 this.watson.response.output.text[0] = `${errMessage.result.errorMessage}`;
                 this.watson.response.output.text[1] = `Can you please provide a valid proposal number?`;
                 this.watson.response.context.proposalerr = errMessage.result.errorMessage;
-                reject(this.watson.response);
+                resolve(this.watson.response);
             });
         });
     }
