@@ -214,20 +214,33 @@ module.exports = class ChiaController {
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
-                if(pq.result.isPriceQuoteInvalid){
+                if (pq.result.isPriceQuoteInvalid) {
                     this.watson.response.output.text[0] = `PriceQuote is Invalid, ${pq.result.priceQuoteMessageText}`;
                     this.watson.response.output.text[1] = `To check another price, just hit refresh.`
-                } else if(!pq.result.isPriceQuoteAvailable){
+                } else if (!pq.result.isPriceQuoteAvailable) {
                     this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
                     this.watson.response.output.text[1] = `To check another price, just hit refresh.`
-                } else{
-                    let priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                    let priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
+                } else {
+                    let tierResponse = '';
+                    const priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
+                    const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
                         ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                    let tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${(pq.result.supplierAgreementDescription=='') ? '' : pq.result.supplierAgreementDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`
+                    if (pq.result.costIndicator == 'AG' || pq.result.costIndicator == 'GR') {
+                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} tier ${pq.result.costTierNum} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                    } else if (pq.result.costIndicator == 'LC') {
+                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                    } else if (pq.result.costIndicator == 'BL' || pq.result.costIndicator == 'NC') {
+                        tierResponse = `This price comes from Cardinal local pricing`
+                    } else if (pq.result.costIndicator == 'GM') {
+                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.distAgreementExtDesc} and is valid from ${pq.result.currentPriceValidityFromDate} to ${pq.result.currentPriceValidityToDate}.`;
+                    }
                     this.watson.response.output.text[0] = priceResponse;
-                    this.watson.response.output.text[1] = tierResponse;
-                    this.watson.response.output.text[2] = `To check another price, just hit refresh.`
+                    if (tierResponse) {
+                        this.watson.response.output.text[1] = tierResponse;
+                        this.watson.response.output.text[2] = `To check another price, just hit refresh.`
+                    } else {
+                        this.watson.response.output.text[1] = `To check another price, just hit refresh.`
+                    }
                 }
                 resolve(this.watson.response);
             }, (err) => {
