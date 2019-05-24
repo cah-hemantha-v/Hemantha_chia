@@ -34,8 +34,6 @@ module.exports = class ChiaController {
                     reject(rest);
                 });
             });
-        }).then((result) => {
-            return result;
         })
     }
 
@@ -64,10 +62,6 @@ module.exports = class ChiaController {
                     reject(rest);
                 });
             });
-        }).then((result) => {
-            return result;
-        }).catch((err) => {
-            return err;
         })
     }
 
