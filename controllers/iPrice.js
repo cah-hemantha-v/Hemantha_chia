@@ -11,12 +11,13 @@ module.exports = class iPrice {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Basic '+ process.env.IPRICE_CREDS
+            //'x-api-key': process.env.APIGEE_APIKEY || 'CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p'
         }
     }
 
     setUid(uid) {
         this.uid = uid;
-        this.headers.uid = uid;
+        this.headers.uid = uid;        
     }
 
     getIPrice(url, qs) {
@@ -41,9 +42,8 @@ module.exports = class iPrice {
             logger.debug(options);
             request(options, (error, response, body) => {
                 if (!error) {
-                    logger.info(response.statusCode);
                     if (response.statusCode == 200) resolve(response.body);
-                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
+                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401) reject(response.body);
                 } else reject(error);
             });
         });
@@ -90,15 +90,5 @@ module.exports = class iPrice {
             returnLimit: 10
         };
         return this.getIPrice(ProposalNumberUrl, qs);
-    }
-
-    checkMembershipAgreement(soldto, material) {
-        logger.debug("inside check membership agreement method");
-        const membershipUrl = `${this.url}/iprice/api/contract`;
-        const qs = {
-            customerNumber: soldto,
-            materialNumber: material
-        };
-        return this.getIPrice(membershipUrl, qs);
     }
 }
