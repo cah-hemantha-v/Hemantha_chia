@@ -298,7 +298,7 @@ module.exports = class ChiaController {
             }).catch((err) => {
                 logger.error(err);
                 let errMessage = JSON.parse(err);
-                this.watson.response.context.proposalerr = `${errMessage.result.errorMessage}`;
+                this.watson.response.context.proposalerr = errMessage.result.errorMessage;
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
