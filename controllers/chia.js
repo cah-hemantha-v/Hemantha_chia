@@ -297,11 +297,11 @@ module.exports = class ChiaController {
                 resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
-                const errMessage = JSON.parse(err);
-                this.watson.response.output.text[0] = `${errMessage.result.errorMessage}`;
-                this.watson.response.output.text[1] = `Can you please provide a valid proposal number?`;
-                this.watson.response.context.proposalerr = errMessage.result.errorMessage;
-                resolve(this.watson.response);
+                let errMessage = JSON.parse(err);
+                this.watson.response.context.proposalerr = `${errMessage.result.errorMessage}`;
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
             });
         });
     }
