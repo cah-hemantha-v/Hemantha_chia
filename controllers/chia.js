@@ -31,7 +31,7 @@ module.exports = class ChiaController {
                 this.watson.setContext("soldtoerr", JSON.parse(err).result.errorMessage);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     logger.error(this.watson.response);
-                    reject(rest);
+                    resolve(rest);
                 });
             });
         })
@@ -52,17 +52,30 @@ module.exports = class ChiaController {
                 const material_description = response.materialDescription;
                 this.watson.setContext("material_return", `<div>Here is the material information for the Material Number you entered:</div><div><b>Vendor Name:</b> ${vendor_name}</div><div><b>Material Description:</b> ${material_description}</div>`);
                 return this.watson.response;
-            }).then((data) => {
+            }).then(() => {
                 resolve(this.checkMembershipAgreement());
             }).catch((err) => {
                 logger.error(err);
-                const error_message = `${this.watson.response.context.cah_material} is an ${err.result.errorMessage}`;
+                logger.error(JSON.parse(err));
+                const error_message = `${this.watson.response.context.cah_material} is an ${JSON.parse(err).result.errorMessage}`;
                 this.watson.setContext('matNumErr', error_message);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    reject(rest);
+                    resolve(rest);
                 });
             });
         })
+    }
+
+    primaryAgreement(agreements) {
+        logger.warn(agreements);
+        for (let i = 0; i < agreements.length; i++) {
+            if (agreements[i].primaryAgreement) {
+                logger.warn("returning true");
+                return true;
+            }
+        }
+        logger.warn("returning false");
+        return false;
     }
 
     checkMembershipAgreement() {
@@ -76,28 +89,31 @@ module.exports = class ChiaController {
 
             this.iprice.checkMembershipAgreement(soldto, cah_material).then((response) => {
                 this.watson.setContext("counter", 0);
-                const agreement = JSON.parse(response).result[0];
-                // 'This constumer material combination is also eligible on teh following contracts:<parameters>Cardinal Agreement, Cost Description, Cost External Description, Contract Cost, <pagination>'
-                logger.info("agreement");
-                logger.info(agreement);
-                logger.info(agreement.primaryAgreement);
+                const agreements = JSON.parse(response).result;
                 this.watson.response.output.text[0] = this.watson.getContext("material_return")
-                if (!agreement.primaryAgreement) {
-                    this.watson.response.output.text[1] = `Item is not currently accessing a primary agreement ie non-contracted`
+
+                if (agreements.errorMessage || !this.primaryAgreement(agreements)) {
+                    this.watson.request.output.text[1] = `Item is not currently accessing a primary agreement ie non-contracted`
                 } else {
-                    const contract_number = agreement.agreementNumber;
-                    const contract_type = agreement.agreementCategoryType;
-                    const eligible_start_date = agreement.agreementMaterialValidFromDateDisplay;
-                    const eligible_end_date = agreement.agreementMaterialValidToDateDisplay;
-                    this.watson.response.output.text[1] = `Winning price for soldto ${soldto} and material ${cah_material} comes from ${contract_type} ${contract_number}, effective from ${eligible_start_date} to ${eligible_end_date}`
+                    for (let i = 0; i < agreements.length; i++) {
+                        if (agreements[i].primaryAgreement) {
+                            this.watson.response.output.text.push(`Winning price for soldto ${soldto} and material ${cah_material} comes from ${agreements[i].agreementCategoryType} ${agreements[i].agreementNumber}, effective from ${agreements[i].agreementMaterialValidFromDateDisplay} to ${agreements[i].agreementMaterialValidToDateDisplay}`);
+                        } else {
+                            this.watson.response.output.text.push(`<div>This customer material combination is also eligible on the following contracts:</div>
+                            <div>${agreements[i].agreementNumber}</div>
+                            <div>${agreements[i].agreementDescription}</div>
+                            <div>${agreements[i].agreementExternalDescription}</div>
+                            <div>${agreements[i].rateDisplay}</div>`);
+                        }
+                    }
                 }
-                this.watson.response.output.text[2] = `Would you like to check another membership request?`
+                this.watson.response.output.text.push(`Would you like to check another membership request?`);
                 resolve(this.watson.response);
             }).catch((err) => {
-                logger.error(JSON.parse(err));
+                logger.error(err);
                 this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err}`;
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    reject(rest);
+                    resolve(rest);
                 });
             });
         })
@@ -131,8 +147,6 @@ module.exports = class ChiaController {
                     this.watson.response.input.text = dc.toString();
                     this.watson.response.context.singleDc = true;
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                        logger.info(`Customer got one DC`);
-                        logger.info(rest);
                         resolve(rest);
                     });
                 }
@@ -140,11 +154,7 @@ module.exports = class ChiaController {
                 logger.error(err);
                 const errMessage = JSON.parse(err);
                 this.watson.setContext("soldtoerr", errMessage.result.errorMessage);
-                logger.info(`priting error response..`)
-                logger.info(this.watson.response);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    logger.error(`Priting error skip input response`);
-                    logger.error(rest);
                     resolve(rest);
                 });
             });
@@ -214,7 +224,6 @@ module.exports = class ChiaController {
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
-                logger.warn(pq);
                 if (!pq.result.isPriceQuoteAvailable) {
                     this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
                     this.watson.response.output.text[1] = `To check another price, just hit refresh.`
@@ -260,7 +269,6 @@ module.exports = class ChiaController {
 
             const iPriceUrl = 'http://iprice.dev.cardinalhealth.net';
             const proposal_number = this.watson.getContext("proposal_number");
-            logger.info(`Proposal# Identified - ${proposal_number}`);
             this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
                 const prop_stat = JSON.parse(proposalResponse);
                 let payloadArray = [];
