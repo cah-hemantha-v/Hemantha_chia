@@ -24,7 +24,7 @@ module.exports = class Watson {
                 context: body.context || {},
                 input: body.input || {}
             };
-            logger.info(`Workspace ID -- ${JSON.stringify(payload)}`);
+            logger.debug(payload);
             this.assistant.message(payload, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
