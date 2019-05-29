@@ -14,8 +14,6 @@ function getUid(request, response, next) {
     else {
         new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
             let oktaResponse = JSON.parse(body);
-            logger.info(`Response from Okta UserInfo--`);
-            logger.info(oktaResponse);
             if (oktaResponse.uid) {
                 request.login_uid = oktaResponse.uid;
             } else {
@@ -43,7 +41,6 @@ module.exports = function getRouter(app) {
             logger.info(`-------------`);
             return res.status(200).json(rest);
         }).catch((err) => {
-            logger.error('catch - chiaroute.js')
             logger.error(err);
             logger.error(`-------------`);
             return res.status(200).json(err);
