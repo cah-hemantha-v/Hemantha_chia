@@ -137,7 +137,7 @@ module.exports = class ChiaController {
                 if (dc.length > 1) {
                     this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div>` +
                         `<div>Customer: <b>${customer.result.customerName}</b></div>`;
-                    this.watson.response.output.text[1] = 'Please select the distribution channel';
+                    this.watson.response.output.text[1] = 'Please select the distribution channel.';
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
                         'values': dc
@@ -225,7 +225,7 @@ module.exports = class ChiaController {
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
                 if (!pq.result.isPriceQuoteAvailable) {
-                    this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}`;
+                    this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}.`;
                     this.watson.response.output.text[1] = `To check another price, just hit refresh.`
                 } else if (pq.result.isPriceQuoteInvalid) {
                     this.watson.response.output.text[0] = `${pq.result.priceQuoteMessageText}`;
@@ -267,7 +267,7 @@ module.exports = class ChiaController {
             this.watson.setContext("Check_Proposal", false);
             this.watson.setContext("proposalerr", false);
 
-            const iPriceUrl = 'http://iprice.dev.cardinalhealth.net';
+            const iPriceUrl = 'http://iprice.cardinalhealth.net/iprice/index.jsp';
             const proposal_number = this.watson.getContext("proposal_number");
             this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
                 const prop_stat = JSON.parse(proposalResponse);
@@ -305,11 +305,11 @@ module.exports = class ChiaController {
                 resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
-                const errMessage = JSON.parse(err);
-                this.watson.response.output.text[0] = `${errMessage.result.errorMessage}`;
-                this.watson.response.output.text[1] = `Can you please provide a valid proposal number?`;
+                let errMessage = JSON.parse(err);
                 this.watson.response.context.proposalerr = errMessage.result.errorMessage;
-                resolve(this.watson.response);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
             });
         });
     }
