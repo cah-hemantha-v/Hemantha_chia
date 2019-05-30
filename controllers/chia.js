@@ -97,7 +97,19 @@ module.exports = class ChiaController {
                 } else {
                     for (let i = 0; i < agreements.length; i++) {
                         if (agreements[i].primaryAgreement) {
-                            this.watson.response.output.text.push(`Winning price for soldto ${soldto} and material ${cah_material} comes from ${agreements[i].agreementCategoryType} ${agreements[i].agreementNumber}, effective from ${agreements[i].agreementMaterialValidFromDateDisplay} to ${agreements[i].agreementMaterialValidToDateDisplay}`);
+                            let tierResponse = '';
+                            // if (agreements[i].agreementCategoryType == 'AG' || agreements[i].agreementCategoryType == 'GR') {
+                            //     tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} tier ${pq.result.costTierNum} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                            // } else if (agreements[i].agreementCategoryType == 'LC') {
+                            //     tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                            // } else if (agreements[i].agreementCategoryType == 'BL') {
+                            //     tierResponse = `This price comes from Cardinal local pricing`
+                            // } else if (agreements[i].agreementCategoryType == 'GM') {
+                            //     tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.distAgreementExtDesc} and is valid from ${pq.result.currentPriceValidityFromDate} to ${pq.result.currentPriceValidityToDate}.`;
+                            // } else { //NC
+                            //     tierResponse = `This price comes from Cardinal local pricing`
+                            // }
+                            this.watson.response.output.text.push(`Winning price for soldto ${soldto} and material ${cah_material} comes from ${agreements[i].agreementCategoryTypeDesc} contract ${agreements[i].agreementDescription}-${agreements[i].agreementExternalDescription} ${tierResponse} and is valid from ${agreements[i].agreementMaterialValidFromDateDisplay} to ${agreements[i].agreementMaterialValidToDateDisplay}`);
                         } else {
                             this.watson.response.output.text.push(`<div>This customer material combination is also eligible on the following contracts:</div>
                             <div>${agreements[i].agreementNumber}</div>
