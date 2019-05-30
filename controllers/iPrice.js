@@ -41,7 +41,7 @@ module.exports = class iPrice {
             logger.debug(options);
             request(options, (error, response, body) => {
                 if (!error) {
-                    logger.info(response.statusCode);
+                    logger.info(response);
                     if (response.statusCode == 200) resolve(response.body);
                     else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
                 } else reject(error);

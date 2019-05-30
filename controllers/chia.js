@@ -55,10 +55,10 @@ module.exports = class ChiaController {
             }).then(() => {
                 resolve(this.checkMembershipAgreement());
             }).catch((err) => {
-                logger.error(err);
                 logger.error(JSON.parse(err));
                 const error_message = `${this.watson.response.context.cah_material} is an ${JSON.parse(err).result.errorMessage}`;
                 this.watson.setContext('matNumErr', error_message);
+                logger.error(this.watson.response);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
@@ -92,7 +92,7 @@ module.exports = class ChiaController {
                 const agreements = JSON.parse(response).result;
                 this.watson.response.output.text[0] = this.watson.getContext("material_return")
 
-                if (agreements.errorMessage || !this.primaryAgreement(agreements)) {
+                if (!this.primaryAgreement(agreements)) {
                     this.watson.request.output.text[1] = `Item is not currently accessing a primary agreement ie non-contracted`
                 } else {
                     for (let i = 0; i < agreements.length; i++) {
@@ -111,10 +111,17 @@ module.exports = class ChiaController {
                 resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
-                this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err}`;
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                if (JSON.parse(err).result.errorMessage) {
+                    this.watson.response.context.no_agreement = `${JSON.parse(err).result.errorMessage}`;
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else {
+                    this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err}`;
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                }
             });
         })
     }
@@ -135,8 +142,7 @@ module.exports = class ChiaController {
                 });
                 this.watson.setContext("dist_channel", dc);
                 if (dc.length > 1) {
-                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div>` +
-                        `<div>Customer: <b>${customer.result.customerName}</b></div>`;
+                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${customer.result.customerName}</b></div>`;
                     this.watson.response.output.text[1] = 'Please select the distribution channel.';
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
@@ -145,7 +151,8 @@ module.exports = class ChiaController {
                     resolve(this.watson.response);
                 } else if (dc.length == 1) {
                     this.watson.response.input.text = dc.toString();
-                    this.watson.response.context.singleDc = true;
+                    this.watson.response.context.singleDc = true; //("singleDc", true);
+                    this.watson.response.context.customer_name = customer.result.customerName; //setContext("customer_name", customer.result.customerName);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -169,43 +176,25 @@ module.exports = class ChiaController {
 
             const cah_material = this.watson.getContext("cah_material");
             this.iprice.checkMaterialNum(cah_material).then((matNumBody) => {
-                let matNum = JSON.parse(matNumBody);
-                let uom = matNum.result.unitOfMeasures;
+                const matNum = JSON.parse(matNumBody);
+                const uom = ['Sales'].concat(matNum.result.unitOfMeasures);
                 this.watson.response.context.counter = 0;
                 this.watson.response.context.uom = uom;
-                if (uom.length > 0) {
-                    this.watson.response.output.chiapayload = [{
-                            'type': 'text',
-                            'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
-                                        <div>Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b></div>`]
-                        },
-                        {
-                            'type': 'text',
-                            'values': [`<div>What is the UOM you would like checked? </div>
+                this.watson.response.output.chiapayload = [{
+                        'type': 'text',
+                        'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
+                                        <div>Vendor: <b>${matNum.result.vendorName}</b></div><div>Material Description: <b>${matNum.result.materialDescription}</b></div>`]
+                    },
+                    {
+                        'type': 'text',
+                        'values': [`<div>What is the UOM you would like checked? </div>
                                                 <div>You can choose one of the several options below or type in your own UOM.</div>`]
-                        },
-                        {
-                            'type': 'button',
-                            'values': uom
-                        }
-                    ];
-                } else {
-                    this.watson.response.output.chiapayload = [{
-                            'type': 'text',
-                            'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
-                                    <div>Vendor: <b>${matNum.result.vendorName}</b>  Material Description: <b>${matNum.result.materialDescription}</b></div>`]
-                        },
-                        {
-                            'type': 'text',
-                            'values': [`<div>What is the UOM you would like checked? </div>
-                                            <div>You can choose one of the several options below or type in your own UOM.</div>`]
-                        },
-                        {
-                            'type': 'button',
-                            'values': ['Sales']
-                        }
-                    ];
-                }
+                    },
+                    {
+                        'type': 'button',
+                        'values': uom
+                    }
+                ];
                 resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
@@ -291,7 +280,9 @@ module.exports = class ChiaController {
                         'values': []
                     }, {
                         'type': 'text',
-                        'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`]
+                        'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`,
+                            'Can I help you with anything else? Refresh to see all your options.'
+                        ]
                     })
                 }
                 prop_stat.result.forEach(element => {
