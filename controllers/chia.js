@@ -219,13 +219,17 @@ module.exports = class ChiaController {
                 } else if (!pq.result.isPriceQuoteAvailable) {
                     this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}.`;
                     this.watson.response.output.text[1] = `Please refresh to check another customer.`
-                } else if(pq.result.isPriceQuoteAvailable && !pq.result.isPriceQuoteInvalid) {
+                } else if (pq.result.isPriceQuoteAvailable && !pq.result.isPriceQuoteInvalid) {
                     let tierResponse = '';
                     const priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
                     const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
-                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                    if (pq.result.costIndicator == 'AG' || pq.result.costIndicator == 'GR' && pq.result.costTierNum) {
-                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} tier ${pq.result.costTierNum} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;                    
+                    if (pq.result.costIndicator == 'AG' || pq.result.costIndicator == 'GR') {
+                        if (pq.result.costTierNum != '') {
+                            tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} tier ${pq.result.costTierNum} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                        } else {
+                            tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                        }
                     } else if (pq.result.costIndicator == 'LC') {
                         tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
                     } else if (pq.result.costIndicator == 'BL' || pq.result.costIndicator == 'NC') {
