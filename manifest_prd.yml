@@ -1,0 +1,22 @@
+---
+applications:
+- name: mp-chia
+  memory: 512M
+  instances: 2
+  env:
+    WHITELISTURLS: https://chia.cardinalhealth.net, https://cardinalb2e.okta.com, https://chia-prod.apps.cf.gc.cahcloud.net, https://mp-chia-prod.apps.cf.gc.cahcloud.net, https://apps.system.cf.gc.cahcloud.net
+    WORKSPACE_ID: bb2853f1-7fd7-47b6-a6f3-46212ade1473
+    IPRICE_HOST: http://iprice.cardinalhealth.net
+    WATSON_APIKEY: ARtLtVijMRMf2844yXGSnAhm8pnqyjBU5fXAiZZArbDX
+    APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
+    SNOW_INSTANCE: cardinal
+    SNOW_UID: chia.bot
+    SNOW_PWD: J0hnny5
+    AD_SERVER_URL: 10.50.32.41
+    AD_USERNAME: btsid.bot001
+    AD_PASSWORD: Cardinal@1
+    OKTA_HOST: cardinalpreprdb2e.oktapreview.com
+    IPRICE_CREDS: Y29yc3lzMDI6Q2FyZGluYWxAMTIzNA==
+routes:
+  - route: mp-chia-prod.apps.cf.gc.cahcloud.net
+command: npm run start
