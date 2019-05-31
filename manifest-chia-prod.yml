@@ -16,7 +16,7 @@ applications:
     AD_USERNAME: btsid.bot001
     AD_PASSWORD: Cardinal@1
     OKTA_HOST: cardinalpreprdb2e.oktapreview.com
-    IPRICE_CREDS: Y29yc3lzMDI6Q2FyZGluYWxAMTIzNA==
+    IPRICE_CREDS: Y29yc3lzMDE6eXVAbHBIMyQ=
 routes:
   - route: mp-chia-prod.apps.cf.gc.cahcloud.net
 command: npm run start
