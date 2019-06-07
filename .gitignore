@@ -3,3 +3,4 @@ public/
 .env
 manifest.yml
 .vscode
+activedirectory.js

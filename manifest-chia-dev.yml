@@ -13,9 +13,10 @@ applications:
     SNOW_INSTANCE: cardinalsand
     SNOW_UID: chia.bot
     SNOW_PWD: J0hnny5
-    AD_SERVER_URL: 10.50.32.41
-    AD_USERNAME: btsid.bot001
-    AD_PASSWORD: Cardinal@1
+    AD_SERVER_URL: dev.npch.int
+    AD_USERNAME: SA-OH061.CHIA@dev.npch.int
+    AD_PASSWORD: auSa5vdBCsFZKRat
+    AD_BASEDN: dc=dev,dc=npch,dc=int
     OKTA_HOST: cardinalb2e.oktapreview.com
     IPRICE_CREDS: Y29yc3lzMDE6Q2FyZGluYWxAMTIzNA==
 routes:

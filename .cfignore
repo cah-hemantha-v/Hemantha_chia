@@ -3,3 +3,4 @@ manifest.yml
 manifest_stg.yml
 .vscode
 .gitignore
+public/
