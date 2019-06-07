@@ -4,7 +4,7 @@ applications:
   memory: 256M
   instances: 1
   env:
-    WHITELISTURLS: https://cardinalb2e.oktapreview.com, https://chia.apps.cf.np.gc.cahcloud.net, https://mp-chia.apps.cf.np.gc.cahcloud.net, http://localhost:4200, https://apps.system.cf.np.gc.cahcloud.net
+    WHITELISTURLS: https://cardinalb2e.oktapreview.com, https://chia.apps.cf.np.gc.cahcloud.net,https://chia.apps.cf.np.gc.cahcloud.com,https://mp-chia.apps.cf.np.gc.cahcloud.net,https://mp-chia.apps.cf.np.gc.cahcloud.com, http://localhost:4200, https://apps.system.cf.np.gc.cahcloud.net
     WORKSPACE_ID: c6d87b7f-c012-4a4d-91bc-e7985605fc29
     IPRICE_HOST: http://iprice.dev.cardinalhealth.net
     WATSON_APIKEY: ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr
