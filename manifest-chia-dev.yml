@@ -19,4 +19,5 @@ applications:
     IPRICE_CREDS: Y29yc3lzMDE6Q2FyZGluYWxAMTIzNA==
 routes:
   - route: mp-chia.apps.cf.np.gc.cahcloud.net
+  - route: mp-chia.apps.cf.np.gc.cahcloud.com
 command: npm run start
