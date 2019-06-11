@@ -101,4 +101,6 @@ module.exports = class iPrice {
         };
         return this.getIPrice(membershipUrl, qs);
     }
+
+    
 }

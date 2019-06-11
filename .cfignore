@@ -4,3 +4,5 @@ manifest_stg.yml
 .vscode
 .gitignore
 public/
+activedirectory.js
+watson_update.js
