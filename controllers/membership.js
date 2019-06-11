@@ -2,16 +2,16 @@ const watson = require('./watson');
 const iPrice = require('./iPrice');
 const logger = require('../utils/logger');
 
-module.exports = class Membership{
-    constructor(){
+module.exports = class Membership {
+    constructor() {
         this.iprice = new iPrice();
         this.watson = new watson();
     }
-    
-    membershipCheckSoldTo() {
+
+    checkSoldTo() {
         logger.debug("inside membership check SoldTo method");
         return new Promise((resolve, reject) => {
-            this.watson.setContext("MembershipCheckSoldto", false);
+            this.watson.setContext("checkSoldTo", false);
             const sold_to = this.watson.getContext("soldto");
 
             this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
@@ -35,7 +35,7 @@ module.exports = class Membership{
         })
     }
 
-    membershipCheckMaterial() {
+    checkMaterial() {
         logger.debug(`inside check material method`);
         return new Promise((resolve, reject) => {
             this.watson.setContext("MembershipCheckMaterial", false);

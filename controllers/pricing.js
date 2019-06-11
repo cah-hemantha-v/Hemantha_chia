@@ -33,8 +33,8 @@ module.exports = class Pricing {
                     resolve(this.watson.response);
                 } else if (dc.length == 1) {
                     this.watson.response.input.text = dc.toString();
-                    this.watson.response.context.singleDc = true; //("singleDc", true);
-                    this.watson.response.context.customer_name = customer.result.customerName; //setContext("customer_name", customer.result.customerName);
+                    this.watson.setContext("singleDc", true);
+                    this.watson.setContext("customer_name", customer.result.customerName);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -50,7 +50,7 @@ module.exports = class Pricing {
         });
     }
 
-    CheckMaterial() {
+    checkMaterial() {
         logger.debug(`inside check material method`);
         return new Promise((resolve, reject) => {
             this.watson.response.context.CheckMaterial = false;
