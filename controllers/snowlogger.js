@@ -77,7 +77,6 @@ module.exports = class SnowLogger {
     createConversationLog(chia_obj) {
         const conversation_id = chia_obj.context.conversation_id;
         this.conversationExists(conversation_id).then((exists) => {
-            logger.debug(exists);
             if (!exists) {
                 this.createConversation(chia_obj).then(() => {
                     this.appendConversationLog(chia_obj);

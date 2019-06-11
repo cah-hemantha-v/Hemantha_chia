@@ -18,13 +18,13 @@ module.exports = class ChiaController {
         logger.debug(`watson input`);
         return new Promise((resolve, reject) => {
             this.watson.setRequest(request);
-            this.iprice.setUid(this.watson.request.login_uid);
+            this.setIpriceUid();
             this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
-                this.watson.setResponse(watsonResponse);
+                this.setWatsonResponse(watsonResponse);
                 if (this.watson.getContext("CheckSoldto")) resolve(this.pricing.checkSoldTo());
-                else if (this.watson.getContext("MembershipCheckSoldto")) resolve(this.membership.membershipCheckSoldTo());
-                else if (this.watson.getContext("MembershipCheckMaterial")) resolve(this.membership.membershipCheckMaterial());
-                else if (this.watson.getContext("CheckMaterial")) resolve(this.pricing.CheckMaterial());
+                else if (this.watson.getContext("MembershipCheckSoldto")) resolve(this.membership.checkSoldTo());
+                else if (this.watson.getContext("MembershipCheckMaterial")) resolve(this.membership.checkMaterial());
+                else if (this.watson.getContext("CheckMaterial")) resolve(this.pricing.checkMaterial());
                 else if (this.watson.getContext("getPriceQuote")) resolve(this.pricing.getPriceQuote());
                 else if (this.watson.getContext("Check_Proposal")) resolve(this.pricing.checkProposal());
                 else resolve(this.watson.response);
@@ -33,5 +33,17 @@ module.exports = class ChiaController {
                 reject(err);
             });
         });
+    }
+
+    setIpriceUid() {
+        this.iprice.setUid(this.watson.request.login_uid);
+        this.pricing.iprice.setUid(this.watson.request.login_uid);
+        this.membership.iprice.setUid(this.watson.request.login_uid);
+    }
+
+    setWatsonResponse(response) {
+        this.watson.setResponse(response);
+        this.pricing.watson.setResponse(response);
+        this.membership.watson.setResponse(response);
     }
 }

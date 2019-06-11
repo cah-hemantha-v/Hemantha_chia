@@ -38,7 +38,6 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            logger.debug(options);
             request(options, (error, response, body) => {
                 if (!error) {
                     logger.info(response);
@@ -101,6 +100,4 @@ module.exports = class iPrice {
         };
         return this.getIPrice(membershipUrl, qs);
     }
-
-    
 }
