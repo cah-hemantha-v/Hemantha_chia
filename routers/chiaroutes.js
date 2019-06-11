@@ -1,7 +1,8 @@
 'use strict';
+const logger = require('../utils/logger');
 const chia = require('../controllers/chia');
 const Okta = require('../controllers/okta');
-const logger = require('../utils/logger');
+const SnowLogger = require('../controllers/snowlogger');
 
 function getUid(request, response, next) {
     const token = request.headers['authorization'];
@@ -35,7 +36,13 @@ module.exports = function getRouter(app) {
 
     app.post('/api/message', getUid, (req, res) => {
         let chiaController = new chia();
+        let snowlogger = new SnowLogger();
         chiaController.postWatsonMessage(req).then((rest) => {
+            try {
+                snowlogger.createConversationLog(rest);
+            } catch (err) {
+                logger.error(err);
+            }
             const message = rest ? "message was returned" : "mo message included";
             logger.debug(message);
             logger.info(`-------------`);
