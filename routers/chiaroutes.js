@@ -17,7 +17,6 @@ function getUid(request, response, next) {
             logger.debug(body);
             let oktaResponse = JSON.parse(body);
             if (oktaResponse.uid) {
-                if (oktaResponse.preferred_username) request.email = oktaResponse.preferred_username;
                 request.login_uid = oktaResponse.uid;
             } else {
                 logger.error(`UID Not available.`);
