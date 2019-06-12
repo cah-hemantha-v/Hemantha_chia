@@ -146,7 +146,6 @@ module.exports = class Pricing {
             this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
                 const prop_stat = JSON.parse(proposalResponse);
                 let payloadArray = [];
-
                 if (this.watson.getContext("isProposalSpecific")) {
                     this.watson.setContext("isProposalSpecific", false);
                     payloadArray.push({

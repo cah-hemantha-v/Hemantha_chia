@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 const routes = require('./routers/chiaroutes');
 const port = process.env.PORT || process.env.VCAP_APP_PORT || 3000;
 const whiteListURL = process.env.WHITELISTURLS || 'http://localhost:3000'
-
+const newrelic = require('newrelic');
 const app = express();
 
 app.use(helmet());

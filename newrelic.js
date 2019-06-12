@@ -9,11 +9,11 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['My Application'],
+  app_name: ['cah-chia-medpricing'],
   /**
    * Your New Relic license key.
    */
-  license_key: 'license key here',
+  license_key: 'd84fd64879799b860c131e8f86de2ecb7d2fcce1',
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
