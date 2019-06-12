@@ -17,6 +17,7 @@ applications:
     AD_PASSWORD: Cardinal@1
     OKTA_HOST: cardinalb2e.okta.com
     IPRICE_CREDS: Y29yc3lzMDE6eXVAbHBIMyQ=
+    NODE_ENV: production
 routes:
   - route: mp-chia.apps.cf.gc.cahcloud.net
 command: npm run start
