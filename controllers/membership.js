@@ -11,7 +11,7 @@ module.exports = class Membership {
     checkSoldTo() {
         logger.debug("inside membership check SoldTo method");
         return new Promise((resolve, reject) => {
-            this.watson.setContext("checkSoldTo", false);
+            this.watson.setContext("MembershipCheckSoldto", false);
             const sold_to = this.watson.getContext("soldto");
 
             this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
