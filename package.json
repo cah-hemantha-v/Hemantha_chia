@@ -29,6 +29,7 @@
     "ibm-watson": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.4.0",
+    "newrelic": "^5.9.1",
     "nodemon": "^1.19.1",
     "request": "^2.88.0",
     "winston": "^3.2.1"
