@@ -27,6 +27,7 @@ module.exports = class ChiaController {
                 else if (this.watson.getContext("CheckMaterial")) resolve(this.pricing.checkMaterial());
                 else if (this.watson.getContext("getPriceQuote")) resolve(this.pricing.getPriceQuote());
                 else if (this.watson.getContext("Check_Proposal")) resolve(this.pricing.checkProposal());
+                else if (this.watson.getContext("Check_Governance")) resolve (this.pricing.checkGovernance());
                 else resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);

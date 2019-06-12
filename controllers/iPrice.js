@@ -106,14 +106,16 @@ module.exports = class iPrice {
         return this.getIPrice(membershipUrl, qs);
     }
 
-    updatePricingProposal(ProposalNumber, LineNumber, LoadPrice, AmountNumber ) {
+    updatePricingProposal(proposalDetail) {
         logger.debug("inside updating pricing for specific proposal");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: ProposalNumber,
-            lineNum: LineNumber,
-            loadAs: LoadPrice,
-            amount: AmountNumber
+            proposalId: proposalDetail.proposal_number,
+            lineNum: proposalDetail.line_number,
+            loadAs: proposalDetail.load_price,
+            amount: proposalDetail.amount,
+            fromDate: proposalDetail.effective_date,
+            toDate: proposalDetail.expiration_date
         };
         return this.PutIprice(proposalUrl, qs);
     }

@@ -194,43 +194,37 @@ module.exports = class Pricing {
         logger.debug(`Check Governance Code called...`);
         return new promise((resolve, reject) => {
             this.watson.setContext("governanceerr", false);
-            const cah_material = this.watson.getContext("cah_material");
-            const sold_to = this.watson.getContext("soldto");
             const proposalDetail = {
-                soldto: sold_to,
-                cah_material: cah_material
-            }
-            this.iprice.checkExistingPrice(proposalDetail).then((proposalResponse) => {
-                const prop_body = JSON.parse(proposalResponse);
-                const proposalNumber = prop_body.result.proposalId;
-                const lineNumber = prop_body.result.lineNumber;
-                const LoadPrice = (this.watson.getContext("loadAs") == 'Firm Price') ? 'F' :
+                proposal_number: this.watson.getContext("proposalId"),
+                line_number: this.watson.getContext("lineNum"),
+                load_price: (this.watson.getContext("loadAs") == 'Firm Price') ? 'P' :
                     (this.watson.getContext("loadAs") == 'List Less') ? 'L' :
-                        'C';
-                const AmountNumber = this.watson.getContext("amount");
+                        'C',
+                amount: this.watson.getContext("amount"),
+                effective_date: this.watson.getContext("fromDate"),
+                expiration_date: this.watson.getContext("toDate")
+            }
 
-                this.iprice.updatePricingProposal(proposalNumber, lineNumber, LoadPrice, AmountNumber).then((propupdateResponse) => {
-                    const prop_info = JSON.parse(propupdateResponse);
+            this.iprice.updatePricingProposal(proposalDetail).then((proposalResponse) => {
+                const prop_info = JSON.parse(proposalResponse);
 
-                    if (prop_info.result.maintenanceAlertClass == 'alert-info' && prop_info.result.maintenanceErrorDescription > 0) {
+                if (prop_info.result.maintenanceAlertClass == 'alert-info') {
+                    if (prop_info.result.maintenanceErrorDescription > 0) {
                         this.watson.response.output.text[0] = `<div>Just FYI, I found some information on this request:${prop_info.result.maintenanceErrorDescription}</div>`;
                     }
+                    else {
 
-                }).catch((err) => {
-                    logger.error(err);
-                    let errMessage = JSON.parse(err);
-                    this.watson.setContext("governanceerr", errMessage.result.errorMessage);
-                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                        resolve(rest);
-                    });
-                });
+                    }
+                }
 
             }).catch((err) => {
-                logger.error(`Error Occured during existing price check`);
                 logger.error(err);
-                reject(err);
+                let errMessage = JSON.parse(err);
+                this.watson.setContext("governanceerr", errMessage.result.errorMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
             });
-
         });
     }
 }
