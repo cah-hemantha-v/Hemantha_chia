@@ -24,7 +24,7 @@ module.exports = class SnowLogger {
             const conversation_table = new GlideRecord('u_chia_conversations', 'v1');
             let caller_id = this.chiaID;
             try {
-                caller_id = chia_obj.context.sn.user.sys_id || chia_obj.context.sn.bot.sys_id
+                caller_id = chia_obj.context.sys_id
             } catch (err) {
                 logger.error(err);
             }
@@ -50,7 +50,7 @@ module.exports = class SnowLogger {
             let snLog = new GlideRecord('u_chia_conversation_logs', 'v1');
             let caller_id = this.chiaId;
             try {
-                caller_id = chia_obj.context.sn.user.sys_id
+                caller_id = chia_obj.context.sys_id
             } catch (err) {
                 logger.error(err);
             }
