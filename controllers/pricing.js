@@ -189,4 +189,48 @@ module.exports = class Pricing {
             });
         });
     }
+
+    checkGovernance() {
+        logger.debug(`Check Governance Code called...`);
+        return new promise((resolve, reject) => {
+            this.watson.setContext("governanceerr", false);
+            const cah_material = this.watson.getContext("cah_material");
+            const sold_to = this.watson.getContext("soldto");
+            const proposalDetail = {
+                soldto: sold_to,
+                cah_material: cah_material
+            }
+            this.iprice.checkExistingPrice(proposalDetail).then((proposalResponse) => {
+                const prop_body = JSON.parse(proposalResponse);
+                const proposalNumber = prop_body.result.proposalId;
+                const lineNumber = prop_body.result.lineNumber;
+                const LoadPrice = (this.watson.getContext("loadAs") == 'Firm Price') ? 'F' :
+                    (this.watson.getContext("loadAs") == 'List Less') ? 'L' :
+                        'C';
+                const AmountNumber = this.watson.getContext("amount");
+
+                this.iprice.updatePricingProposal(proposalNumber, lineNumber, LoadPrice, AmountNumber).then((propupdateResponse) => {
+                    const prop_info = JSON.parse(propupdateResponse);
+
+                    if (prop_info.result.maintenanceAlertClass == 'alert-info' && prop_info.result.maintenanceErrorDescription > 0) {
+                        this.watson.response.output.text[0] = `<div>Just FYI, I found some information on this request:${prop_info.result.maintenanceErrorDescription}</div>`;
+                    }
+
+                }).catch((err) => {
+                    logger.error(err);
+                    let errMessage = JSON.parse(err);
+                    this.watson.setContext("governanceerr", errMessage.result.errorMessage);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                });
+
+            }).catch((err) => {
+                logger.error(`Error Occured during existing price check`);
+                logger.error(err);
+                reject(err);
+            });
+
+        });
+    }
 }
