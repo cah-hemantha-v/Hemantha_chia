@@ -56,6 +56,7 @@ module.exports = class SnowLogger {
             }
             const log_obj = {
                 u_user: caller_id,
+                u_source: "MedPricing",
                 u_user_input: chia_obj.input.text || "",
                 u_conversation_id: chia_obj.context.conversation_id,
                 u_conversation: chia_obj.context.conversation_id,
