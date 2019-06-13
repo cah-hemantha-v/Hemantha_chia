@@ -31,7 +31,7 @@ module.exports = class SnowLogger {
 
             const conversation_obj = {
                 u_user: caller_id,
-                u_source: "Med Pricing",
+                u_source: "MedPricing",
                 sys_updated_by: "chia.bot",
                 u_conversation_id: chia_obj.context.conversation_id
             }
