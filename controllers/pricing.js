@@ -177,20 +177,18 @@ module.exports = class Pricing {
 
     deleteProposal(pid) {
         logger.info('Delete proposal called.');
-        return new Promise((resolve, reject) => {            
+        return new Promise((resolve, reject) => {
             this.iprice.deleteProposal(pid).then((delResponse) => {
                 const delRes = JSON.parse(delResponse);
+                logger.info(`delRes-${JSON.stringify(delRes)}`);
                 if (delRes.result.success) {
-                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                        resolve(rest);
-                    })
+                    logger.info(`PID: ${pid} is deleted`);
+                    resolve(this.watson.response);
                 }
             }).catch((error) => {
                 logger.error(`PID not deleted - ${error}`);
                 this.watson.setContext('proposalDeleted', false);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                })
+                resolve(this.watson.response);
             });
         })
     }

@@ -44,7 +44,8 @@ module.exports = function getRouter(app) {
                 logger.error(err);
             }
             const message = rest ? "message was returned" : "mo message included";
-            logger.debug(message);
+            logger.info('final response to end user..');
+            logger.info(rest);
             logger.info(`-------------`);
             return res.status(200).json(rest);
         }).catch((err) => {
