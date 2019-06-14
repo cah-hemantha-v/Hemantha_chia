@@ -17,6 +17,7 @@ applications:
     AD_PASSWORD: Cardinal@1
     OKTA_HOST: cardinalpreprdb2e.oktapreview.com
     IPRICE_CREDS: Y29yc3lzMDI6Q2FyZGluYWxAMTIzNA==
+    NODE_ENV: production
 routes:
   - route: mp-chia-stg.apps.cf.np.gc.cahcloud.net
 command: npm run start
