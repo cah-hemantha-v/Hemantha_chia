@@ -192,4 +192,37 @@ module.exports = class Pricing {
             });
         })
     }
+    
+    checkGovernance() {
+        logger.debug(`Check Governance Code called...`);
+        return new promise((resolve, reject) => {
+            this.watson.setContext("Check_Governance", false);
+            this.watson.setContext("governanceerr", false);
+            const proposalDetail = {
+                proposal_number: this.watson.getContext("proposalId"),
+                line_number: this.watson.getContext("lineNum"),
+                load_price: this.watson.getContext("loadAs"),
+                amount: this.watson.getContext("amount"),
+                effective_date: this.watson.getContext("fromDate"),
+                expiration_date: this.watson.getContext("toDate")
+            };
+
+            this.iprice.updatePricingProposal(proposalDetail).then((proposalResponse) => {
+                const prop_info = JSON.parse(proposalResponse);
+
+                this.watson.setContext("govEngineResponse", prop_info.result);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+
+            }).catch((err) => {
+                logger.error(err);
+                let errMessage = JSON.parse(err);
+                this.watson.setContext("governanceerr", errMessage.result.errorMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            });
+        });
+    }
 }

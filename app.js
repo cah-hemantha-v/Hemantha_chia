@@ -1,4 +1,5 @@
 'use strict';
+const newrelic = require('newrelic');
 require('dotenv').config({
     silent: true
 });

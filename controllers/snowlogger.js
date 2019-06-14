@@ -24,14 +24,14 @@ module.exports = class SnowLogger {
             const conversation_table = new GlideRecord('u_chia_conversations', 'v1');
             let caller_id = this.chiaID;
             try {
-                caller_id = chia_obj.context.sn.user.sys_id || chia_obj.context.sn.bot.sys_id
+                caller_id = chia_obj.context.sys_id
             } catch (err) {
                 logger.error(err);
             }
 
             const conversation_obj = {
                 u_user: caller_id,
-                u_source: "Med Pricing",
+                u_source: "MedPricing",
                 sys_updated_by: "chia.bot",
                 u_conversation_id: chia_obj.context.conversation_id
             }
@@ -50,12 +50,13 @@ module.exports = class SnowLogger {
             let snLog = new GlideRecord('u_chia_conversation_logs', 'v1');
             let caller_id = this.chiaId;
             try {
-                caller_id = chia_obj.context.sn.user.sys_id
+                caller_id = chia_obj.context.sys_id
             } catch (err) {
                 logger.error(err);
             }
             const log_obj = {
                 u_user: caller_id,
+                u_source: "MedPricing",
                 u_user_input: chia_obj.input.text || "",
                 u_conversation_id: chia_obj.context.conversation_id,
                 u_conversation: chia_obj.context.conversation_id,
