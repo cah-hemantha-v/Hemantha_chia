@@ -193,29 +193,24 @@ module.exports = class Pricing {
     checkGovernance() {
         logger.debug(`Check Governance Code called...`);
         return new promise((resolve, reject) => {
+            this.watson.setContext("Check_Governance", false);
             this.watson.setContext("governanceerr", false);
             const proposalDetail = {
                 proposal_number: this.watson.getContext("proposalId"),
                 line_number: this.watson.getContext("lineNum"),
-                load_price: (this.watson.getContext("loadAs") == 'Firm Price') ? 'P' :
-                    (this.watson.getContext("loadAs") == 'List Less') ? 'L' :
-                        'C',
+                load_price: this.watson.getContext("loadAs"),
                 amount: this.watson.getContext("amount"),
                 effective_date: this.watson.getContext("fromDate"),
                 expiration_date: this.watson.getContext("toDate")
-            }
+            };
 
             this.iprice.updatePricingProposal(proposalDetail).then((proposalResponse) => {
                 const prop_info = JSON.parse(proposalResponse);
 
-                if (prop_info.result.maintenanceAlertClass == 'alert-info') {
-                    if (prop_info.result.maintenanceErrorDescription > 0) {
-                        this.watson.response.output.text[0] = `<div>Just FYI, I found some information on this request:${prop_info.result.maintenanceErrorDescription}</div>`;
-                    }
-                    else {
-
-                    }
-                }
+                this.watson.setContext("govEngineResponse", prop_info.result);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
 
             }).catch((err) => {
                 logger.error(err);
