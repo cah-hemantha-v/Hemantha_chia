@@ -9,7 +9,7 @@ module.exports = class Pricing {
     }
 
     checkSoldTo() {
-        logger.debug("inside check SoldTo method");
+        logger.debug("Inside CheckSoldto - Pricing JS");
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
             const sold_to = this.watson.getContext("soldto");
@@ -94,40 +94,17 @@ module.exports = class Pricing {
             this.watson.response.context.getPriceQuote = false;
             this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
-                console.log(pq);
-                if (pq.result.isPriceQuoteAvailable && pq.result.isPriceQuoteInvalid) {
-                    this.watson.response.output.text[0] = `${pq.result.priceQuoteMessageText}`;
-                    this.watson.response.output.text[1] = `To check another price, just hit refresh.`;
-                } else if (!pq.result.isPriceQuoteAvailable) {
-                    this.watson.response.output.text[0] = `PriceQuote is not available for customer number: ${pq.result.customerNumber}.`;
-                    this.watson.response.output.text[1] = `Please refresh to check another customer.`
-                } else if (pq.result.isPriceQuoteAvailable && !pq.result.isPriceQuoteInvalid) {
-                    let tierResponse = '';
-                    const priceLocked = pq.result.currentPriceLockedIndicator = 'YES' ? 'locked' : 'unlocked';
-                    const priceResponse = `As of ${pq.result.priceQuoteAsOfDate}, ${pq.result.customerName} - ${pq.result.customerNumber} is accessing \n
-                        ${pq.result.materialNumber} at a ${priceLocked} price of <b>${pq.result.currentPrice}</b>/${pq.result.unitOfMeasure}.\n`;
-                    if (pq.result.costIndicator == 'AG' || pq.result.costIndicator == 'GR') {
-                        if (pq.result.costTierNum != '') {
-                            tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} tier ${pq.result.costTierNum} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
-                        } else {
-                            tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
+                this.watson.setContext('PriceQuote', pq.result);
+                if (!pq.result.editingPermitted) {
+                    this.deleteProposal(pq.result.proposalId).then((status) => {
+                        if (status) {
+                            logger.info(`PID: ${pq.result.proposalId} is deleted`)
                         }
-                    } else if (pq.result.costIndicator == 'LC') {
-                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.supplierAgreementDescription} - ${pq.result.supplierAgreementExtDescription} and is valid from ${pq.result.contractCostValidityDateFrom} to ${pq.result.contractCostValidityDateTo}.`;
-                    } else if (pq.result.costIndicator == 'BL' || pq.result.costIndicator == 'NC') {
-                        tierResponse = `This price comes from Cardinal local pricing`
-                    } else if (pq.result.costIndicator == 'GM') {
-                        tierResponse = `This price comes from ${pq.result.costForPriceSource} contract ${pq.result.distAgreementExtDesc} and is valid from ${pq.result.currentPriceValidityFromDate} to ${pq.result.currentPriceValidityToDate}.`;
-                    }
-                    this.watson.response.output.text[0] = priceResponse;
-                    if (tierResponse) {
-                        this.watson.response.output.text[1] = tierResponse;
-                        this.watson.response.output.text[2] = `To check another price, just hit refresh.`
-                    } else {
-                        this.watson.response.output.text[1] = `To check another price, just hit refresh.`
-                    }
+                    });
                 }
-                resolve(this.watson.response);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
             }, (err) => {
                 logger.error(`Error Occured during Price Quote Check`);
                 logger.error(err);
@@ -143,41 +120,50 @@ module.exports = class Pricing {
             this.watson.setContext("proposalerr", false);
             const iPriceUrl = 'http://iprice.cardinalhealth.net/iprice/index.jsp';
             const proposal_number = this.watson.getContext("proposal_number");
+            logger.info(`proposal number - ${proposal_number}`);
             this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
                 const prop_stat = JSON.parse(proposalResponse);
                 let payloadArray = [];
-                if (this.watson.getContext("isProposalSpecific")) {
-                    this.watson.setContext("isProposalSpecific", false);
-                    payloadArray.push({
-                        'type': 'table',
-                        'values': []
-                    }, {
-                        'type': 'text',
-                        'values': ['Would you like to check on another proposal?']
-                    }, {
-                        'type': 'button',
-                        'values': ['yes', 'no']
-                    })
+                console.log(`Prop status length -- ${prop_stat.result.length}`);
+                if (prop_stat.result.length > 0) {
+                    if (this.watson.getContext("isProposalSpecific")) {
+                        this.watson.setContext("isProposalSpecific", false);
+                        payloadArray.push({
+                            'type': 'table',
+                            'values': []
+                        }, {
+                            'type': 'text',
+                            'values': ['Would you like to check on another proposal?']
+                        }, {
+                            'type': 'button',
+                            'values': ['yes', 'no']
+                        })
+                    } else {
+                        this.watson.setContext('hasProposal', true);
+                        payloadArray.push({
+                            'type': 'table',
+                            'values': []
+                        }, {
+                            'type': 'text',
+                            'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`,
+                                'Can I help you with anything else? Refresh to see all your options.'
+                            ]
+                        })
+                    }
+                    prop_stat.result.forEach(element => {
+                        payloadArray[0].values.push(
+                            `<table style='width: 100%;' border='1' cellpadding='10'><tbody><tr><td>Proposal Number</td><td>${element.proposalId}</td>` +
+                            `</tr><tr><td>Proposal Type</td><td>${element.proposalType}</td></tr><tr><td>Proposal Description</td><td>${element.proposalDescription}</td>` +
+                            `</tr><tr><td>Customer Name</td><td>${element.customerName}</td></tr><tr><td>Material Count</td><td>${element.totalLineCount}</td></tr><tr><td>Proposal Load Status</td><td>${element.loadStatusDesc}</td></tr></tbody></table>`
+                        );
+                    });
+                    this.watson.setContext('chiapayload', payloadArray);
                 } else {
-                    payloadArray.push({
-                        'type': 'table',
-                        'values': []
-                    }, {
-                        'type': 'text',
-                        'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`,
-                            'Can I help you with anything else? Refresh to see all your options.'
-                        ]
-                    })
+                    this.watson.setContext('hasProposal', false);
                 }
-                prop_stat.result.forEach(element => {
-                    payloadArray[0].values.push(
-                        `<table style='width: 100%;' border='1' cellpadding='10'><tbody><tr><td>Proposal Number</td><td>${element.proposalId}</td>` +
-                        `</tr><tr><td>Proposal Type</td><td>${element.proposalType}</td></tr><tr><td>Proposal Description</td><td>${element.proposalDescription}</td>` +
-                        `</tr><tr><td>Customer Name</td><td>${element.customerName}</td></tr><tr><td>Material Count</td><td>${element.totalLineCount}</td></tr><tr><td>Proposal Load Status</td><td>${element.loadStatusDesc}</td></tr></tbody></table>`
-                    );
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
                 });
-                this.watson.response.output.chiapayload = payloadArray;
-                resolve(this.watson.response);
             }).catch((err) => {
                 logger.error(err);
                 let errMessage = JSON.parse(err);
@@ -189,6 +175,24 @@ module.exports = class Pricing {
         });
     }
 
+    deleteProposal(pid) {
+        logger.info('Delete proposal called.');
+        return new Promise((resolve, reject) => {
+            this.iprice.deleteProposal(pid).then((delResponse) => {
+                const delRes = JSON.parse(delResponse);
+                logger.info(`delRes-${JSON.stringify(delRes)}`);
+                if (delRes.result.success) {
+                    logger.info(`PID: ${pid} is deleted`);
+                    resolve(this.watson.response);
+                }
+            }).catch((error) => {
+                logger.error(`PID not deleted - ${error}`);
+                this.watson.setContext('proposalDeleted', false);
+                resolve(this.watson.response);
+            });
+        })
+    }
+    
     checkGovernance() {
         logger.debug(`Check Governance Code called...`);
         return new promise((resolve, reject) => {

@@ -10,7 +10,7 @@ module.exports = class iPrice {
             'uid': this.uid,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': 'Basic '+ process.env.IPRICE_CREDS
+            'Authorization': 'Basic ' + process.env.IPRICE_CREDS
         }
     }
 
@@ -20,7 +20,7 @@ module.exports = class iPrice {
     }
 
     getIPrice(url, qs) {
-        logger.debug("inside get iprice method");
+        logger.debug("called getIPrice..");
         return this.createIPricePost(url, qs, "GET");
     }
 
@@ -29,13 +29,17 @@ module.exports = class iPrice {
         return this.createIPricePost(url, qs, "POST");
     }
 
+    deleteIprice(url, qs) {
+        logger.debug('Inside delete iPrice method');
+        return this.createIPricePost(url, qs, 'DELETE');
+    }
     putIprice(url, qs) {
         logger.debug("inside put iprice method");
         return this.createIPricePost(url, qs, "PUT");
     }
 
     createIPricePost(url, qs, method) {
-        logger.debug("inside create iprice post method");
+        logger.debug("called createIPricePost method");
         return new Promise((resolve, reject) => {
             const options = {
                 method: method,
@@ -43,18 +47,22 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
+            logger.info(`Priting Options, ${JSON.stringify(options)}`);
             request(options, (error, response, body) => {
+                logger.info(response);
                 if (!error) {
-                    logger.info(response);
                     if (response.statusCode == 200) resolve(response.body);
                     else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
-                } else reject(error);
+                } else {
+                    logger.error(error);
+                    reject(error);
+                }
             });
         });
     }
 
     checkSoldToCustomer(soldto) {
-        logger.debug("inside check sold to customer method");
+        logger.debug("Called checkSoldToCustomer..");
         return new Promise((resolve, reject) => {
             const customerUrl = `${this.url}/iprice/api/customer`;
             const qs = {
@@ -106,6 +114,14 @@ module.exports = class iPrice {
         return this.getIPrice(membershipUrl, qs);
     }
 
+    deleteProposal(pid) {
+        logger.debug('Inside Delete Proposal Method');
+        const proposalDelUrl = `${this.url}/iprice/api/proposal`;
+        const qs = {
+            proposalId: pid
+        }
+        return this.deleteIprice(proposalDelUrl, qs);
+    }
     updatePricingProposal(proposalDetail) {
         logger.debug("inside updating pricing for specific proposal");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
