@@ -4,19 +4,19 @@ const logger = require('../utils/logger');
 module.exports = class ServiceNow {
     constructor() {}
 
-    static getUserProfile(email) {
-        logger.debug(`email--${email}`);
+    static getUserProfile(uid) {
+        logger.debug("get user profile")
         return new Promise((resolve, reject) => {
-            var grUser = new glideRecord('sys_user');
-            grUser.setReturnFields('user_name,u_nickname');
-            grUser.addEncodedQuery(`email=${email}`);
+            const grUser = new glideRecord('sys_user');
+            grUser.setReturnFields('sys_id');
+            grUser.addEncodedQuery(`user_name=${uid}`);
             grUser.setLimit(1);
             grUser.query().then(function (result) {
                 if (result.length > 0) {
                     logger.debug(result);
-                    resolve(result[0].user_name);
+                    resolve(result[0].sys_id);
                 } else {
-                    logger.debug('err - ' + result);
+                    logger.error(result);
                     reject(result);
                 }
             }).catch((err) => {

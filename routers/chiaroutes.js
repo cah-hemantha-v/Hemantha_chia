@@ -14,6 +14,7 @@ function getUid(request, response, next) {
     if (!token) return response.status(200).json(chiaOutput);
     else {
         new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
+            logger.debug(body);
             let oktaResponse = JSON.parse(body);
             if (oktaResponse.uid) {
                 request.login_uid = oktaResponse.uid;
