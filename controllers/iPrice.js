@@ -29,6 +29,11 @@ module.exports = class iPrice {
         return this.createIPricePost(url, qs, "POST");
     }
 
+    putIprice(url, qs) {
+        logger.debug("inside put iprice method");
+        return this.createIPricePost(url, qs, "PUT");
+    }
+
     createIPricePost(url, qs, method) {
         logger.debug("inside create iprice post method");
         return new Promise((resolve, reject) => {
@@ -99,5 +104,19 @@ module.exports = class iPrice {
             materialNumber: material
         };
         return this.getIPrice(membershipUrl, qs);
+    }
+
+    updatePricingProposal(proposalDetail) {
+        logger.debug("inside updating pricing for specific proposal");
+        const proposalUrl = `${this.url}/iprice/api/proposal`;
+        const qs = {
+            proposalId: proposalDetail.proposal_number,
+            lineNum: proposalDetail.line_number,
+            loadAs: proposalDetail.load_price,
+            amount: proposalDetail.amount,
+            fromDate: proposalDetail.effective_date,
+            toDate: proposalDetail.expiration_date
+        };
+        return this.PutIprice(proposalUrl, qs);
     }
 }
