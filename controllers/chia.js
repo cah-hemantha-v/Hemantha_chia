@@ -1,9 +1,9 @@
 'use strict';
-
 const watson = require('./watson');
 const iPrice = require('./iPrice');
 const logger = require('../utils/logger');
 const pricing = require('./pricing');
+const ServiceNow = require('./snowhelper');
 const membership = require('./membership');
 
 module.exports = class ChiaController {
@@ -14,37 +14,57 @@ module.exports = class ChiaController {
         this.membership = new membership();
     }
 
-    postWatsonMessage(request) {
-        logger.debug(`watson input`);
-        return new Promise((resolve, reject) => {
-            this.watson.setRequest(request);
-            this.setIpriceUid();
-            this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
-                this.setWatsonResponse(watsonResponse);
-                if (this.watson.getContext("CheckSoldto")) resolve(this.pricing.checkSoldTo());
-                else if (this.watson.getContext("MembershipCheckSoldto")) resolve(this.membership.checkSoldTo());
-                else if (this.watson.getContext("MembershipCheckMaterial")) resolve(this.membership.checkMaterial());
-                else if (this.watson.getContext("CheckMaterial")) resolve(this.pricing.checkMaterial());
-                else if (this.watson.getContext("getPriceQuote")) resolve(this.pricing.getPriceQuote());
-                else if (this.watson.getContext("Check_Proposal")) resolve(this.pricing.checkProposal());
-                else if (this.watson.getContext("Check_Governance")) resolve (this.pricing.checkGovernance());
-                else resolve(this.watson.response);
-            }).catch((err) => {
-                logger.error(err);
-                reject(err);
-            });
-        });
-    }
-
-    setIpriceUid() {
-        this.iprice.setUid(this.watson.request.login_uid);
-        this.pricing.iprice.setUid(this.watson.request.login_uid);
-        this.membership.iprice.setUid(this.watson.request.login_uid);
+    setIpriceUid(uid) {
+        this.iprice.setUid(uid);
+        this.pricing.iprice.setUid(uid);
+        this.membership.iprice.setUid(uid);
     }
 
     setWatsonResponse(response) {
         this.watson.setResponse(response);
         this.pricing.watson.setResponse(response);
         this.membership.watson.setResponse(response);
+    }
+
+    updateConversationLog(uid) {
+        return new Promise((resolve, reject) => {
+            logger.debug("inside update conversation main");
+            ServiceNow.getUserProfile(uid).then((sys_id) => {
+                logger.debug("sys_id = " + sys_id);
+                this.watson.setContext("sys_id", sys_id);
+                resolve(this.apiRoutes());
+            }).catch((err) => {
+                logger.error(err);
+                reject(err);
+            });
+        })
+    }
+
+    apiRoutes() {
+        logger.debug("inside api routes");
+        if (this.watson.getContext("CheckSoldto")) return (this.pricing.checkSoldTo());
+        else if (this.watson.getContext("MembershipCheckSoldto")) return (this.membership.checkSoldTo());
+        else if (this.watson.getContext("MembershipCheckMaterial")) return (this.membership.checkMaterial());
+        else if (this.watson.getContext("CheckMaterial")) return (this.pricing.checkMaterial());
+        else if (this.watson.getContext("getPriceQuote")) return (this.pricing.getPriceQuote());
+        else if (this.watson.getContext("Check_Proposal")) return (this.pricing.checkProposal());
+        else if (this.watson.getContext("Check_Governance")) resolve (this.pricing.checkGovernance());
+        else return (this.watson.response);
+    }
+
+    postWatsonMessage(request) {
+        return new Promise((resolve, reject) => {
+            this.watson.setRequest(request);
+            const uid = this.watson.request.login_uid;
+            this.setIpriceUid(uid);
+            this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
+                this.setWatsonResponse(watsonResponse);
+                if (!this.watson.getContext("sys_id")) resolve(this.updateConversationLog(uid));
+                else resolve(this.apiRoutes());
+            }).catch((err) => {
+                logger.error(err);
+                reject(err);
+            });
+        });
     }
 }
