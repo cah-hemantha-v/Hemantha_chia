@@ -19,6 +19,7 @@ applications:
     AD_BASEDN: dc=dev,dc=npch,dc=int
     OKTA_HOST: cardinalb2e.oktapreview.com
     IPRICE_CREDS: Y29yc3lzMDI6Q2FyZGluYWxAMTIzNA==
+    CHIA_SYSID: b46f9c09db8edf0cbe676165ca9619ce
     NODE_ENV: development
 routes:
   - route: mp-chia.apps.cf.np.gc.cahcloud.net
