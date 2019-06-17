@@ -33,6 +33,7 @@ module.exports = class iPrice {
         logger.debug('Inside delete iPrice method');
         return this.createIPricePost(url, qs, 'DELETE');
     }
+
     putIprice(url, qs) {
         logger.debug("inside put iprice method");
         return this.createIPricePost(url, qs, "PUT");
@@ -122,17 +123,18 @@ module.exports = class iPrice {
         }
         return this.deleteIprice(proposalDelUrl, qs);
     }
-    updatePricingProposal(proposalDetail) {
+    
+    updatePricingProposal(priceQuote,submitProposal) {
         logger.debug("inside updating pricing for specific proposal");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: proposalDetail.proposal_number,
-            lineNum: proposalDetail.line_number,
-            loadAs: proposalDetail.load_price,
-            amount: proposalDetail.amount,
-            fromDate: proposalDetail.effective_date,
-            toDate: proposalDetail.expiration_date
+            proposalId: priceQuote.proposalId,
+            lineNum: priceQuote.lineNumber,
+            loadAs: submitProposal.loadAs,
+            amount: submitProposal.amount,
+            fromDate: submitProposal.start_date,
+            toDate: submitProposal.end_date
         };
-        return this.PutIprice(proposalUrl, qs);
+        return this.putIprice(proposalUrl, qs);
     }
 }
