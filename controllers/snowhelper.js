@@ -5,6 +5,7 @@ module.exports = class ServiceNow {
     constructor() {}
 
     static getUserProfile(uid) {
+        console.log(`UID - ${uid}`)
         logger.debug("get user profile")
         return new Promise((resolve, reject) => {
             const grUser = new glideRecord('sys_user');
@@ -16,8 +17,9 @@ module.exports = class ServiceNow {
                     logger.debug(result);
                     resolve(result[0].sys_id);
                 } else {
+                    logger.error(`Not able to fetch user properties, adding BOT ID for logging`);
                     logger.error(result);
-                    reject(result);
+                    resolve(process.env.CHIA_SYSID);
                 }
             }).catch((err) => {
                 logger.error(`Not able to fetch user properties`);

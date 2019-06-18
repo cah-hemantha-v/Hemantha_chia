@@ -1,7 +1,6 @@
 node_modules/
-public/
+public/*
 .env
-manifest.yml
 .vscode
+*.log
 activedirectory.js
-watson_update.js
