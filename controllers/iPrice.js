@@ -138,13 +138,13 @@ module.exports = class iPrice {
         return this.putIprice(proposalUrl, qs);
     }
 
-    submitPricingProposal(priceQuote, governanceReason) {
+    submitPricingProposal(submitProposal) {
         logger.debug("inside submit proposal for specific proposal");
         const proposalsubmitUrl = `${this.url}/iprice/api/proposal/submit`;
         const qs = {
-            proposalId: priceQuote.proposalId,
-            lineNum: priceQuote.lineNumber,
-            governanceReason: governanceReason
+            proposalId: submitProposal.proposalId,
+            lineNum: submitProposal.lineNumber,
+            governanceReason: submitProposal.governanceReason
         };
         return this.PostIPrice(proposalsubmitUrl, qs);
     }

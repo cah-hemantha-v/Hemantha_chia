@@ -225,10 +225,10 @@ module.exports = class Pricing {
         return new Promise((resolve, reject) => {
             this.watson.setContext("Submit_Proposal", false);
             this.watson.setContext("submitproposalerr", false);
-            let priceQuote = this.watson.getContext("PriceQuote");
-            let governanceReason = this.watson.getContext("GovernanceReason");
             
-            this.iprice.submitPricingProposal(priceQuote,governanceReason).then((submitResponse) => {
+            let submitProposal = this.watson.getContext("submitproposal");
+            
+            this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
                 const submit_info = JSON.parse(submitResponse);
                 logger.info('printing submit_info');
                 logger.debug(submit_info);
