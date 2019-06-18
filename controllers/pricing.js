@@ -219,4 +219,32 @@ module.exports = class Pricing {
             });
         });
     }
+
+    submitProposal () {
+        logger.debug(`Submit Proposal Code called...`);
+        return new Promise((resolve, reject) => {
+            this.watson.setContext("Submit_Proposal", false);
+            this.watson.setContext("submitproposalerr", false);
+            
+            let submitProposal = this.watson.getContext("submitproposal");
+            
+            this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
+                const submit_info = JSON.parse(submitResponse);
+                logger.info('printing submit_info');
+                logger.debug(submit_info);
+                this.watson.setContext("submitProposalResponse", submit_info.result);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            }).catch((err) => {
+                logger.error(err);
+                let errMessage = JSON.parse(err);
+                this.watson.setContext("submitproposalerr", errMessage.result.errorMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            });
+        });
+
+    }
 }
