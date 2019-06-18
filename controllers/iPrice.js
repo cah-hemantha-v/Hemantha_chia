@@ -48,7 +48,7 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            logger.info(`Printing Options, ${options}`);
+            logger.info(`Printing Options, ${JSON.stringify(options)}`);
             request(options, (error, response, body) => {
                 logger.info(response);
                 if (!error) {
@@ -124,7 +124,7 @@ module.exports = class iPrice {
         }
         return this.deleteIprice(proposalDelUrl, qs);
     }
-    
+
     updatePricingProposal(submitProposal) {
         logger.debug("inside updating pricing for specific proposal");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
@@ -145,7 +145,7 @@ module.exports = class iPrice {
         const proposalsubmitUrl = `${this.url}/iprice/api/proposal/submit`;
         const qs = {
             proposalId: submitProposal.proposalId,
-            lineNum: submitProposal.lineNumber,
+            lineNum: submitProposal.lineNum,
             governanceReason: submitProposal.governanceReason
         };
         return this.PostIPrice(proposalsubmitUrl, qs);

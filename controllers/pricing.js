@@ -200,7 +200,7 @@ module.exports = class Pricing {
             this.watson.setContext("governanceerr", false);
             //let priceQuote = this.watson.getContext("PriceQuote");
             let submitProposal = this.watson.getContext("submitproposal");
-            
+
             this.iprice.updatePricingProposal(submitProposal).then((proposalResponse) => {
                 const prop_info = JSON.parse(proposalResponse);
                 logger.info('printing prop_info');
@@ -225,18 +225,17 @@ module.exports = class Pricing {
         return new Promise((resolve, reject) => {
             this.watson.setContext("Submit_Proposal", false);
             this.watson.setContext("submitproposalerr", false);
-            
             let submitProposal = this.watson.getContext("submitproposal");
-            
             this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
                 const submit_info = JSON.parse(submitResponse);
                 logger.info('printing submit_info');
                 logger.debug(submit_info);
-                this.watson.setContext("submitProposalResponse", submit_info.result);
+                this.watson.setContext("isProposalSubmitted", true);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
             }).catch((err) => {
+                this.watson.setContext("isProposalSubmitted", false);
                 logger.error(err);
                 let errMessage = JSON.parse(err);
                 this.watson.setContext("submitproposalerr", errMessage.result.errorMessage);
