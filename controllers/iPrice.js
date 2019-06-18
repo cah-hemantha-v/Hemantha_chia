@@ -48,13 +48,14 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            logger.info(`Priting Options, ${JSON.stringify(options)}`);
+            logger.info(`Printing Options, ${options}`);
             request(options, (error, response, body) => {
                 logger.info(response);
                 if (!error) {
                     if (response.statusCode == 200) resolve(response.body);
                     else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
                 } else {
+                    logger.error('Error occured while making iPrice API call.');
                     logger.error(error);
                     reject(error);
                 }
@@ -124,16 +125,17 @@ module.exports = class iPrice {
         return this.deleteIprice(proposalDelUrl, qs);
     }
     
-    updatePricingProposal(priceQuote,submitProposal) {
+    updatePricingProposal(submitProposal) {
         logger.debug("inside updating pricing for specific proposal");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: priceQuote.proposalId,
-            lineNum: priceQuote.lineNumber,
+            proposalId: submitProposal.proposalId,
+            lineNum: submitProposal.lineNum,
             loadAs: submitProposal.loadAs,
             amount: submitProposal.amount,
             fromDate: submitProposal.start_date,
-            toDate: submitProposal.end_date
+            toDate: submitProposal.end_date,
+            prcMessage: submitProposal.prcMessage
         };
         return this.putIprice(proposalUrl, qs);
     }

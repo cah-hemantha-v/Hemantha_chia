@@ -198,10 +198,10 @@ module.exports = class Pricing {
         return new Promise((resolve, reject) => {
             this.watson.setContext("Check_Governance", false);
             this.watson.setContext("governanceerr", false);
-            let priceQuote = this.watson.getContext("PriceQuote");
+            //let priceQuote = this.watson.getContext("PriceQuote");
             let submitProposal = this.watson.getContext("submitproposal");
             
-            this.iprice.updatePricingProposal(priceQuote,submitProposal).then((proposalResponse) => {
+            this.iprice.updatePricingProposal(submitProposal).then((proposalResponse) => {
                 const prop_info = JSON.parse(proposalResponse);
                 logger.info('printing prop_info');
                 logger.debug(prop_info);
