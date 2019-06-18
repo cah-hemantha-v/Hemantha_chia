@@ -146,6 +146,6 @@ module.exports = class iPrice {
             lineNum: priceQuote.lineNumber,
             governanceReason: governanceReason
         };
-        return this.PostIprice(proposalsubmitUrl, qs);
+        return this.PostIPrice(proposalsubmitUrl, qs);
     }
 }
