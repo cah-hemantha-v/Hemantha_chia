@@ -48,7 +48,7 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            logger.info(`Printing Options, ${JSON.stringify(options)}`);
+            logger.info(`Printing Options, ${JSON.stringify(options,null,2)}`);
             request(options, (error, response, body) => {
                 logger.info(response);
                 if (!error) {
