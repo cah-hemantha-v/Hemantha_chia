@@ -137,4 +137,15 @@ module.exports = class iPrice {
         };
         return this.putIprice(proposalUrl, qs);
     }
+
+    submitPricingProposal(priceQuote, governanceReason) {
+        logger.debug("inside submit proposal for specific proposal");
+        const proposalsubmitUrl = `${this.url}/iprice/api/proposal/submit`;
+        const qs = {
+            proposalId: priceQuote.proposalId,
+            lineNum: priceQuote.lineNumber,
+            governanceReason: governanceReason
+        };
+        return this.PostIprice(proposalsubmitUrl, qs);
+    }
 }
