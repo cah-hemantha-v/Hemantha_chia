@@ -20,27 +20,27 @@ module.exports = class iPrice {
     }
 
     getIPrice(url, qs) {
-        logger.debug("called getIPrice..");
+        logger.debug("4. Inside getIPrice() method.");
         return this.createIPricePost(url, qs, "GET");
     }
 
     PostIPrice(url, qs) {
-        logger.debug("inside post iprice method");
+        logger.debug("4. Inside PostIPrice() method.");
         return this.createIPricePost(url, qs, "POST");
     }
 
     deleteIprice(url, qs) {
-        logger.debug('Inside delete iPrice method');
+        logger.debug("4. Inside deleteIprice() method.");
         return this.createIPricePost(url, qs, 'DELETE');
     }
 
     putIprice(url, qs) {
-        logger.debug("inside put iprice method");
+        logger.debug("4. Inside putIprice() method.");
         return this.createIPricePost(url, qs, "PUT");
     }
 
     createIPricePost(url, qs, method) {
-        logger.debug("called createIPricePost method");
+        logger.debug("5. Inside createIPricePost() method.");
         return new Promise((resolve, reject) => {
             const options = {
                 method: method,
@@ -48,10 +48,11 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            logger.info(`Printing Options, ${JSON.stringify(options,null,2)}`);
+            console.log(JSON.stringify(options));
             request(options, (error, response, body) => {
-                logger.info(response);
                 if (!error) {
+                    logger.debug('iPrice reponse.')
+                    console.log(body);
                     if (response.statusCode == 200) resolve(response.body);
                     else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
                 } else {
@@ -64,7 +65,7 @@ module.exports = class iPrice {
     }
 
     checkSoldToCustomer(soldto) {
-        logger.debug("Called checkSoldToCustomer..");
+        logger.debug("3. Inside checkSoldToCustomer() function.");
         return new Promise((resolve, reject) => {
             const customerUrl = `${this.url}/iprice/api/customer`;
             const qs = {
@@ -75,7 +76,7 @@ module.exports = class iPrice {
     }
 
     checkMaterialNum(matNum) {
-        logger.debug("inside check material num method");
+        logger.debug("3. Inside checkMaterialNum() function.");
         const materialUrl = `${this.url}/iprice/api/material`;
         const qs = {
             materialNumber: matNum
@@ -83,21 +84,21 @@ module.exports = class iPrice {
         return this.getIPrice(materialUrl, qs);
     }
 
-    checkExistingPrice(priceQuote) {
-        logger.debug("inside check existing price method");
+    checkExistingPrice(checkpricing) {
+        logger.debug("3. Inside checkExistingPrice() function.");
         const pricequoteUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            customerNumber: priceQuote.soldto,
-            materialNumber: priceQuote.cah_material,
-            um: priceQuote.selected_uom,
-            asOfDate: priceQuote.selected_date,
-            dc: priceQuote.selected_dc
+            customerNumber: checkpricing.soldto,
+            materialNumber: checkpricing.cah_material,
+            um: checkpricing.selected_uom,
+            asOfDate: checkpricing.selected_date,
+            dc: checkpricing.selected_dc
         };
         return this.PostIPrice(pricequoteUrl, qs);
     }
 
     checkProposalStatus(ProposalNumber) {
-        logger.debug("inside check propsosal status method");
+        logger.debug("3. Inside checkProposalStatus() function.");
         const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
             proposalId: ProposalNumber,
@@ -107,7 +108,7 @@ module.exports = class iPrice {
     }
 
     checkMembershipAgreement(soldto, material) {
-        logger.debug("inside check membership agreement method");
+        logger.debug("3. Inside checkMembershipAgreement() function.");
         const membershipUrl = `${this.url}/iprice/api/contract`;
         const qs = {
             customerNumber: soldto,
@@ -117,7 +118,7 @@ module.exports = class iPrice {
     }
 
     deleteProposal(pid) {
-        logger.debug('Inside Delete Proposal Method');
+        logger.debug("3. Inside deleteProposal() function.");
         const proposalDelUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
             proposalId: pid
@@ -126,7 +127,7 @@ module.exports = class iPrice {
     }
 
     updatePricingProposal(submitProposal) {
-        logger.debug("inside updating pricing for specific proposal");
+        logger.debug("3. Inside updatePricingProposal() function.");
         const proposalUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
             proposalId: submitProposal.proposalId,
@@ -141,7 +142,7 @@ module.exports = class iPrice {
     }
 
     submitPricingProposal(submitProposal) {
-        logger.debug("inside submit proposal for specific proposal");
+        logger.debug("3. Inside submitPricingProposal() function.");
         const proposalsubmitUrl = `${this.url}/iprice/api/proposal/submit`;
         const qs = {
             proposalId: submitProposal.proposalId,

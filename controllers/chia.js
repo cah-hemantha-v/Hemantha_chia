@@ -28,10 +28,13 @@ module.exports = class ChiaController {
 
     updateConversationLog(uid) {
         return new Promise((resolve, reject) => {
-            logger.debug("inside update conversation main");
+            logger.debug("Inside updateConversationLog() function.");
             ServiceNow.getUserProfile(uid).then((sys_id) => {
                 logger.debug("sys_id = " + sys_id);
-                this.watson.setContext("sys_id", sys_id);
+                let sn = this.watson.getContext('sn');
+                sn.user.sys_id = sys_id;
+                this.watson.setContext("sn", sn);
+                this.watson.setContext('sys_id_updated', true);
                 resolve(this.apiRoutes());
             }).catch((err) => {
                 logger.error(err);
@@ -41,12 +44,14 @@ module.exports = class ChiaController {
     }
 
     apiRoutes() {
-        logger.debug("inside api routes");
+        let subProposal = this.watson.getContext('submitproposal');
+        if(subProposal){logger.info(`ProposalID-${subProposal.proposalId}`);}
+        logger.debug("1. Inside apiRoutes() method.");
         if (this.watson.getContext("CheckSoldto")) return (this.pricing.checkSoldTo());
         else if (this.watson.getContext("MembershipCheckSoldto")) return (this.membership.checkSoldTo());
         else if (this.watson.getContext("MembershipCheckMaterial")) return (this.membership.checkMaterial());
         else if (this.watson.getContext("CheckMaterial")) return (this.pricing.checkMaterial());
-        else if (this.watson.getContext("getPriceQuote")) return (this.pricing.getPriceQuote());
+        else if (this.watson.getContext("Get_PriceQuote")) return (this.pricing.getPriceQuote());
         else if (this.watson.getContext("Check_Proposal")) return (this.pricing.checkProposal());
         else if (this.watson.getContext("Check_Governance")) return (this.pricing.checkGovernance());
         else if (this.watson.getContext("Delete_Proposal")) return (this.pricing.deleteProposal(this.watson.getContext('proposalId')));
@@ -61,12 +66,12 @@ module.exports = class ChiaController {
             this.setIpriceUid(uid);
             this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
                 this.setWatsonResponse(watsonResponse);
-                if (!this.watson.getContext("sys_id")) resolve(this.updateConversationLog(uid));
+                if (!this.watson.getContext("sys_id_updated")) resolve(this.updateConversationLog(uid));
                 else resolve(this.apiRoutes());
             }).catch((err) => {
                 logger.error(err);
                 reject(err);
             });
         });
-    }    
+    }
 }

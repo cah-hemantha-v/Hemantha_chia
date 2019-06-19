@@ -8,13 +8,12 @@ function getUid(request, response, next) {
     const token = request.headers['authorization'];
     const chiaOutput = {
         output: {
-            text: ['Your session has expired. Please refresh the window to login again.']
+            text: ['Your session has expired. Please refresh the page to login again.']
         }
     }
     if (!token)  return response.status(200).json(chiaOutput);
     else {
         new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
-            logger.debug(body);
             let oktaResponse = JSON.parse(body);
             if (oktaResponse.uid) {
                 request.login_uid = oktaResponse.uid;
@@ -45,9 +44,9 @@ module.exports = function getRouter(app) {
                 logger.error(err);
             }
             const message = rest ? "message was returned" : "mo message included";
-            logger.info('final response to end user..');
-            logger.info(rest);
-            logger.info(`-------------`);
+            logger.debug('final context to end user..');
+            logger.debug(rest.context);
+            logger.debug(`-------------`);
             return res.status(200).json(rest);
         }).catch((err) => {
             logger.error(err);

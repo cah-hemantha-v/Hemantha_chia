@@ -18,13 +18,12 @@ module.exports = class Watson {
 
     watsonPostMessage(body) {
         return new Promise((resolve, reject) => {
-            logger.debug("inside watsonpostmessage method");
+            logger.debug("Inside watsonPostMessage() method.");
             const payload = {
                 workspace_id: this.workspace_id,
                 context: body.context || {},
                 input: body.input || {}
             };
-            logger.debug(payload);
             this.assistant.message(payload, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
