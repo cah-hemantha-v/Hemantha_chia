@@ -5,7 +5,7 @@ applications:
   instances: 1
   env:
     WHITELISTURLS: https://chia.stg.cardinalhealth.net, https://cardinalpreprdb2e.oktapreview.com, https://chia-stg.apps.cf.np.gc.cahcloud.net, https://mp-chia-stg.apps.cf.np.gc.cahcloud.net, https://apps.system.cf.np.gc.cahcloud.net
-    WORKSPACE_ID: bb2853f1-7fd7-47b6-a6f3-46212ade1473
+    WORKSPACE_ID: d62c63ff-d461-4fc4-8ada-8d51bfce3e43
     IPRICE_HOST: http://iprice.stg.cardinalhealth.net
     WATSON_APIKEY: ARtLtVijMRMf2844yXGSnAhm8pnqyjBU5fXAiZZArbDX
     APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
