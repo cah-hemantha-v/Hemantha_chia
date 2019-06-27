@@ -9,11 +9,12 @@ module.exports = class Pricing {
     }
 
     checkSoldTo() {
-        logger.debug("Inside CheckSoldto - Pricing JS");
+        logger.debug("2. Inside checkSoldTo() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
-            const sold_to = this.watson.getContext("soldto");
-            this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
+            let checkpricing = this.watson.getContext("checkpricing");
+            console.log(`checkpricing-${checkpricing}`);
+            this.iprice.checkSoldToCustomer(checkpricing.soldto).then((soldToBody) => {
                 this.watson.setContext("counter", 0);
                 this.watson.setContext("soldtoerr", false);
                 const customer = JSON.parse(soldToBody);
@@ -51,13 +52,12 @@ module.exports = class Pricing {
     }
 
     checkMaterial() {
-        logger.debug(`inside check material method`);
+        logger.debug("2. Inside checkMaterial() function.");
         return new Promise((resolve, reject) => {
             this.watson.response.context.CheckMaterial = false;
             this.watson.response.context.matNumErr = false;
-
-            const cah_material = this.watson.getContext("cah_material");
-            this.iprice.checkMaterialNum(cah_material).then((matNumBody) => {
+            let checkpricing = this.watson.getContext("checkpricing");
+            this.iprice.checkMaterialNum(checkpricing.cah_material).then((matNumBody) => {
                 const matNum = JSON.parse(matNumBody);
                 const uom = ['Sales'].concat(matNum.result.unitOfMeasures);
                 this.watson.response.context.counter = 0;
@@ -90,31 +90,43 @@ module.exports = class Pricing {
     }
 
     getPriceQuote() {
+        logger.debug("2. Inside getPriceQuote() function.")
         return new Promise((resolve, reject) => {
-            this.watson.response.context.getPriceQuote = false;
-            this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
+            this.watson.setContext('Get_PriceQuote', false);
+            let checkpricing = this.watson.getContext("checkpricing");
+            this.iprice.checkExistingPrice(checkpricing).then((priceQuote) => {
                 const pq = JSON.parse(priceQuote);
                 this.watson.setContext('PriceQuote', pq.result);
+                console.log('PriceQuote values')
+                console.log(this.watson.response);
                 if (!pq.result.editingPermitted) {
                     this.deleteProposal(pq.result.proposalId).then((status) => {
                         if (status) {
-                            logger.info(`PID: ${pq.result.proposalId} is deleted`)
+                            logger.info(`PID: ${pq.result.proposalId} is deleted`);
+                            return true;
                         }
+                    }).then((data) => {
+                        console.log('printing again..')
+                        console.log(this.watson.response);
+                        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                            resolve(rest);
+                        });
+                    });
+                } else {
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
                     });
                 }
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
-            }, (err) => {
+            }).catch((err) => {
                 logger.error(`Error Occured during Price Quote Check`);
                 logger.error(err);
                 reject(err);
-            })
+            });
         })
     }
 
     checkProposal() {
-        logger.debug(`Check Proposal Code called...`);
+        logger.debug("2. Inside checkProposal() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Check_Proposal", false);
             this.watson.setContext("proposalerr", false);
@@ -176,7 +188,8 @@ module.exports = class Pricing {
     }
 
     deleteProposal(pid) {
-        logger.info('Delete proposal called.');
+        logger.debug("2. Inside deleteProposal() function.");
+        this.watson.setContext('Delete_Proposal', false);
         return new Promise((resolve, reject) => {
             this.iprice.deleteProposal(pid).then((delResponse) => {
                 const delRes = JSON.parse(delResponse);
@@ -194,13 +207,13 @@ module.exports = class Pricing {
     }
 
     checkGovernance() {
-        logger.debug(`Check Governance Code called...`);
+        logger.debug("2. Inside checkGovernance() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Check_Governance", false);
             this.watson.setContext("governanceerr", false);
             //let priceQuote = this.watson.getContext("PriceQuote");
             let submitProposal = this.watson.getContext("submitproposal");
-            
+
             this.iprice.updatePricingProposal(submitProposal).then((proposalResponse) => {
                 const prop_info = JSON.parse(proposalResponse);
                 logger.info('printing prop_info');
@@ -220,23 +233,22 @@ module.exports = class Pricing {
         });
     }
 
-    submitProposal () {
-        logger.debug(`Submit Proposal Code called...`);
+    submitProposal() {
+        logger.debug("2. Inside submitProposal() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Submit_Proposal", false);
             this.watson.setContext("submitproposalerr", false);
-            
             let submitProposal = this.watson.getContext("submitproposal");
-            
             this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
                 const submit_info = JSON.parse(submitResponse);
                 logger.info('printing submit_info');
                 logger.debug(submit_info);
-                this.watson.setContext("submitProposalResponse", submit_info.result);
+                this.watson.setContext("isProposalSubmitted", true);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
             }).catch((err) => {
+                this.watson.setContext("isProposalSubmitted", false);
                 logger.error(err);
                 let errMessage = JSON.parse(err);
                 this.watson.setContext("submitproposalerr", errMessage.result.errorMessage);
