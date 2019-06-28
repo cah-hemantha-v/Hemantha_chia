@@ -151,4 +151,17 @@ module.exports = class iPrice {
         };
         return this.PostIPrice(proposalsubmitUrl, qs);
     }
+
+    submitPriceCatalog(submitPriceBook) {
+        logger.debug("inside submit pricebook request");
+        const pricebooksubmitUrl = `${this.url}/iprice/api/report/priceCatalogCompare`;
+        const qs = {
+            customerNumber: submitPriceBook.customerNumber,
+            productType: submitPriceBook.productType,
+            baseDate: submitPriceBook.baseDate,
+            compareDate: submitPriceBook.compareDate
+        };
+        return this.PostIPrice(pricebooksubmitUrl, qs);
+    }
+        
 }
