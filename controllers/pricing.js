@@ -9,22 +9,21 @@ module.exports = class Pricing {
     }
 
     checkSoldTo() {
-        logger.debug("Inside CheckSoldto - Pricing JS");
+        logger.debug("2. Inside checkSoldTo() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
-            const sold_to = this.watson.getContext("soldto");
-            this.iprice.checkSoldToCustomer(sold_to).then((soldToBody) => {
+            let checkpricing = this.watson.getContext("checkpricing");
+            this.iprice.checkSoldToCustomer(checkpricing.soldto).then((soldToBody) => {
                 this.watson.setContext("counter", 0);
                 this.watson.setContext("soldtoerr", false);
-                const customer = JSON.parse(soldToBody);
-                const distChannels = customer.result.distributionChannelIds;
+                const distChannels = soldToBody.result.distributionChannelIds;
                 let dc = [];
                 distChannels.forEach(element => {
                     dc.push(`${element.id} - ${element.description}`);
                 });
                 this.watson.setContext("dist_channel", dc);
                 if (dc.length > 1) {
-                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${customer.result.customerName}</b></div>`;
+                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${soldToBody.result.customerName}</b></div>`;
                     this.watson.response.output.text[1] = 'Please select the distribution channel.';
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
@@ -34,7 +33,7 @@ module.exports = class Pricing {
                 } else if (dc.length == 1) {
                     this.watson.response.input.text = dc.toString();
                     this.watson.setContext("singleDc", true);
-                    this.watson.setContext("customer_name", customer.result.customerName);
+                    this.watson.setContext("customer_name", soldToBody.result.customerName);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -51,21 +50,19 @@ module.exports = class Pricing {
     }
 
     checkMaterial() {
-        logger.debug(`inside check material method`);
+        logger.debug("2. Inside checkMaterial() function.");
         return new Promise((resolve, reject) => {
             this.watson.response.context.CheckMaterial = false;
             this.watson.response.context.matNumErr = false;
-
-            const cah_material = this.watson.getContext("cah_material");
-            this.iprice.checkMaterialNum(cah_material).then((matNumBody) => {
-                const matNum = JSON.parse(matNumBody);
-                const uom = ['Sales'].concat(matNum.result.unitOfMeasures);
+            let checkpricing = this.watson.getContext("checkpricing");
+            this.iprice.checkMaterialNum(checkpricing.cah_material).then((matNumBody) => {
+                const uom = ['Sales'].concat(matNumBody.result.unitOfMeasures);
                 this.watson.response.context.counter = 0;
                 this.watson.response.context.uom = uom;
                 this.watson.response.output.chiapayload = [{
                         'type': 'text',
                         'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
-                                        <div>Vendor: <b>${matNum.result.vendorName}</b></div><div>Material Description: <b>${matNum.result.materialDescription}</b></div>`]
+                                        <div>Vendor: <b>${matNumBody.result.vendorName}</b></div><div>Material Description: <b>${matNumBody.result.materialDescription}</b></div>`]
                     },
                     {
                         'type': 'text',
@@ -90,31 +87,60 @@ module.exports = class Pricing {
     }
 
     getPriceQuote() {
+        logger.debug("2. Inside getPriceQuote() function.")
+        this.watson.setContext('Get_PriceQuote', false);
         return new Promise((resolve, reject) => {
-            this.watson.response.context.getPriceQuote = false;
-            this.iprice.checkExistingPrice(this.watson.response.context).then((priceQuote) => {
-                const pq = JSON.parse(priceQuote);
-                this.watson.setContext('PriceQuote', pq.result);
-                if (!pq.result.editingPermitted) {
-                    this.deleteProposal(pq.result.proposalId).then((status) => {
-                        if (status) {
-                            logger.info(`PID: ${pq.result.proposalId} is deleted`)
-                        }
+            let checkpricing = this.watson.getContext("checkpricing");
+            this.iprice.checkExistingPrice(checkpricing).then((cepResponse) => {
+                if (cepResponse.statusCode == 300) {
+                    this.watson.setContext('hasMultiPosition', true);
+                    this.watson.setContext('positioncodes', cepResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (cepResponse.statusCode == 200) {
+                    this.watson.setContext('PriceQuote', cepResponse.result);
+                    if (!cepResponse.result.editingPermitted) {
+                        this.deleteProposal(cepResponse.result.proposalId).then((status) => {
+                            if (status) {
+                                logger.info(`PID: ${cepResponse.result.proposalId} is deleted`);
+                                return true;
+                            }
+                        }).then((data) => {
+                            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                                resolve(rest);
+                            });
+                        });
+                    } else {
+                        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                            resolve(rest);
+                        });
+                    }
+                } else if (cepResponse.statusCode == 404) {
+                    this.watson.setContext('pricequote_err', true);
+                    this.watson.setContext('pricequote_errmessage',cepResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
                     });
                 }
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
-            }, (err) => {
+            }).catch((err) => {
                 logger.error(`Error Occured during Price Quote Check`);
                 logger.error(err);
                 reject(err);
-            })
+            });
+        })
+    }
+
+    handleMultiPositions(body) {
+        this.watson.setContext('hasMultiPosition', true);
+        this.watson.setContext('positioncodes', body.result);
+        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+            return rest;
         })
     }
 
     checkProposal() {
-        logger.debug(`Check Proposal Code called...`);
+        logger.debug("2. Inside checkProposal() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Check_Proposal", false);
             this.watson.setContext("proposalerr", false);
@@ -176,7 +202,8 @@ module.exports = class Pricing {
     }
 
     deleteProposal(pid) {
-        logger.info('Delete proposal called.');
+        logger.debug("2. Inside deleteProposal() function.");
+        this.watson.setContext('Delete_Proposal', false);
         return new Promise((resolve, reject) => {
             this.iprice.deleteProposal(pid).then((delResponse) => {
                 const delRes = JSON.parse(delResponse);
@@ -194,13 +221,13 @@ module.exports = class Pricing {
     }
 
     checkGovernance() {
-        logger.debug(`Check Governance Code called...`);
+        logger.debug("2. Inside checkGovernance() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Check_Governance", false);
             this.watson.setContext("governanceerr", false);
             //let priceQuote = this.watson.getContext("PriceQuote");
             let submitProposal = this.watson.getContext("submitproposal");
-            
+
             this.iprice.updatePricingProposal(submitProposal).then((proposalResponse) => {
                 const prop_info = JSON.parse(proposalResponse);
                 logger.info('printing prop_info');
@@ -220,23 +247,22 @@ module.exports = class Pricing {
         });
     }
 
-    submitProposal () {
-        logger.debug(`Submit Proposal Code called...`);
+    submitProposal() {
+        logger.debug("2. Inside submitProposal() function.");
         return new Promise((resolve, reject) => {
             this.watson.setContext("Submit_Proposal", false);
             this.watson.setContext("submitproposalerr", false);
-            
             let submitProposal = this.watson.getContext("submitproposal");
-            
             this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
                 const submit_info = JSON.parse(submitResponse);
                 logger.info('printing submit_info');
                 logger.debug(submit_info);
-                this.watson.setContext("submitProposalResponse", submit_info.result);
+                this.watson.setContext("isProposalSubmitted", true);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
             }).catch((err) => {
+                this.watson.setContext("isProposalSubmitted", false);
                 logger.error(err);
                 let errMessage = JSON.parse(err);
                 this.watson.setContext("submitproposalerr", errMessage.result.errorMessage);
