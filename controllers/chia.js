@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 const pricing = require('./pricing');
 const ServiceNow = require('./snowhelper');
 const membership = require('./membership');
+const reports = require('./reports');
 
 module.exports = class ChiaController {
     constructor() {
@@ -12,18 +13,21 @@ module.exports = class ChiaController {
         this.watson = new watson();
         this.pricing = new pricing();
         this.membership = new membership();
+        this.reports = new reports();
     }
 
     setIpriceUid(uid) {
         this.iprice.setUid(uid);
         this.pricing.iprice.setUid(uid);
         this.membership.iprice.setUid(uid);
+        this.reports.iprice.setUid(uid);
     }
 
     setWatsonResponse(response) {
         this.watson.setResponse(response);
         this.pricing.watson.setResponse(response);
         this.membership.watson.setResponse(response);
+        this.reports.watson.setResponse(response);
     }
 
     updateConversationLog(uid) {
@@ -56,6 +60,8 @@ module.exports = class ChiaController {
         else if (this.watson.getContext("Check_Governance")) return (this.pricing.checkGovernance());
         else if (this.watson.getContext("Delete_Proposal")) return (this.pricing.deleteProposal(this.watson.getContext('proposalId')));
         else if (this.watson.getContext("Submit_Proposal")) return (this.pricing.submitProposal());
+        else if (this.watson.getContext("Check_PriceBook")) return (this.reports.checkPriceBook());
+        else if (this.watson.getContext("Submit_PriceBook")) return (this.reports.submitPriceBookRequest());
         else return (this.watson.response);
     }
 
