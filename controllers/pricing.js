@@ -13,19 +13,17 @@ module.exports = class Pricing {
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
             let checkpricing = this.watson.getContext("checkpricing");
-            console.log(`checkpricing-${checkpricing}`);
             this.iprice.checkSoldToCustomer(checkpricing.soldto).then((soldToBody) => {
                 this.watson.setContext("counter", 0);
                 this.watson.setContext("soldtoerr", false);
-                const customer = JSON.parse(soldToBody);
-                const distChannels = customer.result.distributionChannelIds;
+                const distChannels = soldToBody.result.distributionChannelIds;
                 let dc = [];
                 distChannels.forEach(element => {
                     dc.push(`${element.id} - ${element.description}`);
                 });
                 this.watson.setContext("dist_channel", dc);
                 if (dc.length > 1) {
-                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${customer.result.customerName}</b></div>`;
+                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${soldToBody.result.customerName}</b></div>`;
                     this.watson.response.output.text[1] = 'Please select the distribution channel.';
                     this.watson.response.output.chiapayload = [{
                         'type': 'button',
@@ -35,7 +33,7 @@ module.exports = class Pricing {
                 } else if (dc.length == 1) {
                     this.watson.response.input.text = dc.toString();
                     this.watson.setContext("singleDc", true);
-                    this.watson.setContext("customer_name", customer.result.customerName);
+                    this.watson.setContext("customer_name", soldToBody.result.customerName);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -58,14 +56,13 @@ module.exports = class Pricing {
             this.watson.response.context.matNumErr = false;
             let checkpricing = this.watson.getContext("checkpricing");
             this.iprice.checkMaterialNum(checkpricing.cah_material).then((matNumBody) => {
-                const matNum = JSON.parse(matNumBody);
-                const uom = ['Sales'].concat(matNum.result.unitOfMeasures);
+                const uom = ['Sales'].concat(matNumBody.result.unitOfMeasures);
                 this.watson.response.context.counter = 0;
                 this.watson.response.context.uom = uom;
                 this.watson.response.output.chiapayload = [{
                         'type': 'text',
                         'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
-                                        <div>Vendor: <b>${matNum.result.vendorName}</b></div><div>Material Description: <b>${matNum.result.materialDescription}</b></div>`]
+                                        <div>Vendor: <b>${matNumBody.result.vendorName}</b></div><div>Material Description: <b>${matNumBody.result.materialDescription}</b></div>`]
                     },
                     {
                         'type': 'text',
@@ -91,28 +88,37 @@ module.exports = class Pricing {
 
     getPriceQuote() {
         logger.debug("2. Inside getPriceQuote() function.")
+        this.watson.setContext('Get_PriceQuote', false);
         return new Promise((resolve, reject) => {
-            this.watson.setContext('Get_PriceQuote', false);
             let checkpricing = this.watson.getContext("checkpricing");
-            this.iprice.checkExistingPrice(checkpricing).then((priceQuote) => {
-                const pq = JSON.parse(priceQuote);
-                this.watson.setContext('PriceQuote', pq.result);
-                console.log('PriceQuote values')
-                console.log(this.watson.response);
-                if (!pq.result.editingPermitted) {
-                    this.deleteProposal(pq.result.proposalId).then((status) => {
-                        if (status) {
-                            logger.info(`PID: ${pq.result.proposalId} is deleted`);
-                            return true;
-                        }
-                    }).then((data) => {
-                        console.log('printing again..')
-                        console.log(this.watson.response);
+            this.iprice.checkExistingPrice(checkpricing).then((cepResponse) => {
+                if (cepResponse.statusCode == 300) {
+                    this.watson.setContext('hasMultiPosition', true);
+                    this.watson.setContext('positioncodes', cepResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (cepResponse.statusCode == 200) {
+                    this.watson.setContext('PriceQuote', cepResponse.result);
+                    if (!cepResponse.result.editingPermitted) {
+                        this.deleteProposal(cepResponse.result.proposalId).then((status) => {
+                            if (status) {
+                                logger.info(`PID: ${cepResponse.result.proposalId} is deleted`);
+                                return true;
+                            }
+                        }).then((data) => {
+                            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                                resolve(rest);
+                            });
+                        });
+                    } else {
                         this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                             resolve(rest);
                         });
-                    });
-                } else {
+                    }
+                } else if (cepResponse.statusCode == 404) {
+                    this.watson.setContext('pricequote_err', true);
+                    this.watson.setContext('pricequote_errmessage',cepResponse.result);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -122,6 +128,14 @@ module.exports = class Pricing {
                 logger.error(err);
                 reject(err);
             });
+        })
+    }
+
+    handleMultiPositions(body) {
+        this.watson.setContext('hasMultiPosition', true);
+        this.watson.setContext('positioncodes', body.result);
+        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+            return rest;
         })
     }
 

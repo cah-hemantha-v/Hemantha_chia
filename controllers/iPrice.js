@@ -51,10 +51,10 @@ module.exports = class iPrice {
             console.log(JSON.stringify(options));
             request(options, (error, response, body) => {
                 if (!error) {
-                    logger.debug('iPrice reponse.')
-                    console.log(body);
-                    if (response.statusCode == 200) resolve(response.body);
-                    else if (response.statusCode == 404 || response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502) reject(response.body);
+                    let respBody = JSON.parse(body);
+                    respBody.statusCode = response.statusCode;
+                    if (response.statusCode == 200 || response.statusCode == 300 || response.statusCode == 404) resolve(respBody);
+                    else if (response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502 || response.statusCode == 500) reject(respBody);
                 } else {
                     logger.error('Error occured while making iPrice API call.');
                     logger.error(error);
@@ -92,7 +92,8 @@ module.exports = class iPrice {
             materialNumber: checkpricing.cah_material,
             um: checkpricing.selected_uom,
             asOfDate: checkpricing.selected_date,
-            dc: checkpricing.selected_dc
+            dc: checkpricing.selected_dc,
+            workspace: checkpricing.workspace
         };
         return this.PostIPrice(pricequoteUrl, qs);
     }
