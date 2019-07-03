@@ -118,11 +118,12 @@ module.exports = class iPrice {
         return this.getIPrice(membershipUrl, qs);
     }
 
-    deleteProposal(pid) {
+    deleteProposal(pid,workspace) {
         logger.debug("3. Inside deleteProposal() function.");
         const proposalDelUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: pid
+            proposalId: pid,
+            workspace: workspace
         }
         return this.deleteIprice(proposalDelUrl, qs);
     }
@@ -164,5 +165,5 @@ module.exports = class iPrice {
         };
         return this.PostIPrice(pricebooksubmitUrl, qs);
     }
-        
+
 }
