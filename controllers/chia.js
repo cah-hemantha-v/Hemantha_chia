@@ -1,13 +1,6 @@
 'use strict';
 //added comments for test
-const watson = require('./watson');
-const iPrice = require('./iPrice');
-const logger = require('../utils/logger');
-const pricing = require('./pricing');
-const ServiceNow = require('./snowhelper');
-const membership = require('./membership');
-const reports = require('./reports');
-const dummy = 'dummy';
+
 
 module.exports = class ChiaController {
     constructor() {
