@@ -1,4 +1,5 @@
 'use strict';
+//comments for test
 const watson = require('./watson');
 const iPrice = require('./iPrice');
 const logger = require('../utils/logger');
