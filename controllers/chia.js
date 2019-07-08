@@ -7,6 +7,7 @@ const pricing = require('./pricing');
 const ServiceNow = require('./snowhelper');
 const membership = require('./membership');
 const reports = require('./reports');
+const dummy = 'dummy';
 
 module.exports = class ChiaController {
     constructor() {
