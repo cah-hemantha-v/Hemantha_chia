@@ -8,7 +8,7 @@ module.exports = class Watson {
         this.version = '2018-02-16';
         this.workspace_id = process.env.WORKSPACE_ID;
         this.url = 'https://gateway.watsonplatform.net/assistant/api';
-        this.iam_apikey = process.env.WATSON_APIKEY || 'ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr';
+        this.iam_apikey = process.env.WATSON_APIKEY;
         this.assistant = new AssistantV1({
             version: this.version,
             iam_apikey: this.iam_apikey,

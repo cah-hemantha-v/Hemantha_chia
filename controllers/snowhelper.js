@@ -9,13 +9,13 @@ module.exports = class ServiceNow {
         logger.debug("get user profile")
         return new Promise((resolve, reject) => {
             const grUser = new glideRecord('sys_user');
-            grUser.setReturnFields('sys_id');
+            grUser.setReturnFields('sys_id, email');
             grUser.addEncodedQuery(`user_name=${uid}`);
             grUser.setLimit(1);
             grUser.query().then(function (result) {
                 if (result.length > 0) {
                     logger.debug(result);
-                    resolve(result[0].sys_id);
+                    resolve(result);
                 } else {
                     logger.error(`Not able to fetch user properties, adding BOT ID for logging`);
                     logger.error(result);
