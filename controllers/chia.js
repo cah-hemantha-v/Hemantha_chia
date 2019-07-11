@@ -33,10 +33,10 @@ module.exports = class ChiaController {
     updateConversationLog(uid) {
         return new Promise((resolve, reject) => {
             logger.debug("Inside updateConversationLog() function.");
-            ServiceNow.getUserProfile(uid).then((sys_id) => {
-                logger.debug("sys_id = " + sys_id);
+            ServiceNow.getUserProfile(uid).then((result) => {
+                logger.debug("sys_id = " + result[0].sys_id);
                 let sn = this.watson.getContext('sn');
-                sn.user.sys_id = sys_id;
+                sn.user.sys_id = result[0].sys_id;
                 this.watson.setContext("sn", sn);
                 this.watson.setContext('sys_id_updated', true);
                 resolve(this.apiRoutes());
