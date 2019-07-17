@@ -42,7 +42,7 @@ module.exports = class ChiaController {
                 sn.user.sys_id = result[0].sys_id;
                 this.watson.setContext("sn", sn);
                 this.watson.setContext('sys_id_updated', true);
-                resolve(this.apiRoutes());
+                resolve(this.apiRoutes(uid));
             }).catch((err) => {
                 logger.error(err);
                 reject(err);
@@ -50,7 +50,7 @@ module.exports = class ChiaController {
         })
     }
 
-    apiRoutes() {
+    apiRoutes(uid) {
         let subProposal = this.watson.getContext('submitproposal');
         if(subProposal){logger.info(`ProposalID-${subProposal.proposalId}`);}
         logger.debug("1. Inside apiRoutes() method.");
@@ -69,6 +69,7 @@ module.exports = class ChiaController {
         else if (this.watson.getContext("checkInvoiceNumber")) return (this.creditrebills.checkInvoiceNumber());
         else if (this.watson.getContext("checkMaterial")) return (this.creditrebills.checkMaterialNumber());
         else if (this.watson.getContext("checkLastTenSoldTo")) return (this.creditrebills.checkLastTenSoldTo());
+        else if (this.watson.getContext("Submit_Report")) return (this.reports.submitReportRequest(uid));
         else return (this.watson.response);
     }
 
@@ -80,7 +81,7 @@ module.exports = class ChiaController {
             this.watson.watsonPostMessage(request.body).then((watsonResponse) => {
                 this.setWatsonResponse(watsonResponse);
                 if (!this.watson.getContext("sys_id_updated")) resolve(this.updateConversationLog(uid));
-                else resolve(this.apiRoutes());
+                else resolve(this.apiRoutes(uid));
             }).catch((err) => {
                 logger.error(err);
                 reject(err);

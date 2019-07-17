@@ -20,6 +20,9 @@ applications:
     OKTA_HOST: cardinalpreprdb2e.oktapreview.com
     IPRICE_CREDS: Y29yc3lzMDI6Q2FyZGluYWxAMTIzNA==
     CHIA_SYSID: b46f9c09db8edf0cbe676165ca9619ce
+    DB_USERNAME: ABQ_APP_USER
+    DB_PASSWORD: Bvr415iD
+    DB_HOST: WPOH0014ESQLB16.cardinalhealth.net
     NODE_ENV: production
 routes:
   - route: mp-chia-stg.apps.cf.np.gc.cahcloud.net
