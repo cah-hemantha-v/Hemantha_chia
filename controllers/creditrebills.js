@@ -29,14 +29,13 @@ module.exports = class CreditRebills{
             .then((dbResultSet) => {
                 //logger.debug(dbResultSet);
                 
-                
-                if(dbResultSet[0][0]){
+                if(dbResultSet === undefined || dbResultSet[0].length == 0){
+                    this.watson.setContext('serviceIssueErr', 'We are unable to find your service issue');
+                }
+                else{
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('serviceIssueErr', false);
                     this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
-                }
-                else{
-                    this.watson.setContext('serviceIssueErr', 'We are unable to find your service issue');
                 }
                 
                 /*
@@ -147,5 +146,53 @@ module.exports = class CreditRebills{
                 });
             });
         });
+    }
+
+    checkLastTenSoldTo(){
+        logger.debug("Check Last 10 Soldto Code called...");
+        return new Promise((resolve, reject) => {
+            this.watson.setContext('checkLastTenSoldTo', false);
+
+            let lastTenSoldToNumber = this.watson.getContext('lastTenSoldToNumber');
+
+                        //call to Sql database to get
+
+                        db.executeQuery(`Select 
+                        RECENT_SI_DATA.SERVICE_ISSUE_NUMBER As SERVICE_ISSUE_NUMBER1, 
+                        RECENT_SI_DATA.STATUS_TEXT, 
+                        RECENT_SI_DATA.Soldto, 
+                        RECENT_SI_DATA.SoldtoName, 
+                        RECENT_SI_DATA.ReferenceInvoice, 
+                        RECENT_SI_DATA.CREDIT_MEMO 
+                        From RECENT_SI_DATA 
+                        Where RECENT_SI_DATA.Soldto = '${lastTenSoldToNumber.soldto}'`)
+                        .then((dbResultSet) => {
+                            //logger.debug(dbResultSet);
+                            
+                            
+                            if(dbResultSet === undefined || dbResultSet[0].length == 0){
+                                this.watson.setContext('lastTenSoldToErr', 'We are unable to find your Soldto number');
+                            }
+                            else{
+                                this.watson.setContext('counter', 0);
+                                this.watson.setContext('lastTenSoldToErr', false);
+                                this.watson.setContext('validSoldTo', dbResultSet[0][0]);
+
+                                 //set the validServiceIssue context as it is common for all 3 scenarios
+                                this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
+                            }
+                            
+                           this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                            resolve(rest);
+                            });
+                        }).catch((err) => {
+                            logger.error(err);
+                            this.watson.setContext("lastTenSoldToErr", err.result.errorMessage);
+                            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                                resolve(rest);
+                            });
+                        });
+        });
+
     }
 }

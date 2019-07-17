@@ -68,6 +68,7 @@ module.exports = class ChiaController {
         else if (this.watson.getContext("checkServiceIssue")) return (this.creditrebills.checkServiceIssue());
         else if (this.watson.getContext("checkInvoiceNumber")) return (this.creditrebills.checkInvoiceNumber());
         else if (this.watson.getContext("checkMaterial")) return (this.creditrebills.checkMaterialNumber());
+        else if (this.watson.getContext("checkLastTenSoldTo")) return (this.creditrebills.checkLastTenSoldTo());
         else return (this.watson.response);
     }
 
