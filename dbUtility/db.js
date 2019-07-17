@@ -11,17 +11,24 @@ const dbConfig = {
 
 
 async function executeQuery(sqlQueryString) {
+    let dbResultSet;
+    let pool;
+
     try{
-        let pool = await sql.connect(dbConfig);
+        pool = await sql.connect(dbConfig);
 
         let result = await pool.request().query(sqlQueryString);
 
-        return result['recordset'];
+        dbResultSet = result['recordsets'];
 
     }
     catch(err){
         logger.debug("Error in executeQuery():" + err);
-        return '';
+        dbResultSet = '';
+    }
+    finally{
+        await sql.close();
+        return dbResultSet;
     }
 }
 

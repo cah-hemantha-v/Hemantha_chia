@@ -16,45 +16,136 @@ module.exports = class CreditRebills{
             let serviceIssueNumber = this.watson.getContext('serviceIssueNumber');
             
             //call to Sql database to get
-            //Customer Name: <CustomerName>
-            //Customer Soldto: <CustomerSoldto>
-            //Reference: <ReferenceInvoice>
-            //Service Issue: <ServiceIssueNumber>
-            //Status: <CurrentStatus>
-            //Net Credit: <NetCredit></NetCredit>
 
-            db.executeQuery('SELECT TOP 10 * FROM RECENT_SI_DATA').then((dbResultSet) => {
-                logger.debug(dbResultSet);
-                if(serviceIssueNumber.service_issue_number === 12345678){
+            db.executeQuery(`Select 
+            RECENT_SI_DATA.SERVICE_ISSUE_NUMBER As SERVICE_ISSUE_NUMBER1, 
+            RECENT_SI_DATA.STATUS_TEXT, 
+            RECENT_SI_DATA.Soldto, 
+            RECENT_SI_DATA.SoldtoName, 
+            RECENT_SI_DATA.ReferenceInvoice, 
+            RECENT_SI_DATA.CREDIT_MEMO 
+            From RECENT_SI_DATA 
+            Where RECENT_SI_DATA.SERVICE_ISSUE_NUMBER = '${serviceIssueNumber.service_issue_number}'`)
+            .then((dbResultSet) => {
+                //logger.debug(dbResultSet);
                 
+                
+                if(dbResultSet[0][0]){
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('serviceIssueErr', false);
-    
-                    this.watson.response.output.text[1] = 'Customer Name: <CustomerName>';
-                    this.watson.response.output.text[2] = 'Customer Soldto: <CustomerSoldto>';
-                    this.watson.response.output.text[3] = 'Reference: <ReferenceInvoice>';
-                    this.watson.response.output.text[4] = 'Service Issue: <ServiceIssueNumber>';
-                    this.watson.response.output.text[5] = 'Status: <CurrentStatus>';
-                    this.watson.response.output.text[6] = 'Net Credit: <NetCredit></NetCredit>';
-    
-                   // resolve(this.watson.response);
-                    
+                    this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
                 }
-    
                 else{
-                    let errorMessage = 'We could not find the Service Issue details. Please try again.'
-                    this.watson.setContext('serviceIssueErr', errorMessage);
-                    this.watson.response.output.text[0] = errorMessage;
-                    
+                    this.watson.setContext('serviceIssueErr', 'We are unable to find your service issue');
                 }
-    
+                
+                /*
+               [[ { SERVICE_ISSUE_NUMBER1: '6002078349',
+    STATUS_TEXT: 'Completed',
+    Soldto: '10000003',
+    SoldtoName: 'DIGNITY ST JOSEPHS HOSPITAL PHOENIX',
+    ReferenceInvoice: '7094172176',
+    CREDIT_MEMO: '7102660716' } ]]
+                */
+
+               this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                resolve(rest);
+                });
+            }).catch((err) => {
+                logger.error(err);
+                this.watson.setContext("serviceIssueErr", err.result.errorMessage);
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
-
             });
+    });
+    }
 
 
+    checkInvoiceNumber(){
+        logger.debug("Check Invoice number Code called...");
+        return new Promise((resolve, reject) => {
+            this.watson.setContext('checkInvoiceNumber', false);
+
+            let invoiceNumber = this.watson.getContext('invoiceNumber');
+
+            db.executeQuery(`Select 
+            RECENT_SI_DATA.SERVICE_ISSUE_NUMBER As SERVICE_ISSUE_NUMBER1, 
+            RECENT_SI_DATA.STATUS_TEXT, 
+            RECENT_SI_DATA.Soldto, 
+            RECENT_SI_DATA.SoldtoName, 
+            RECENT_SI_DATA.ReferenceInvoice, 
+            RECENT_SI_DATA.CREDIT_MEMO 
+            From RECENT_SI_DATA 
+            Where RECENT_SI_DATA.ReferenceInvoice = '${invoiceNumber.invoice_number}'`)
+            .then((dbResultSet) => {
+
+                if(dbResultSet === undefined || dbResultSet[0].length == 0){
+                    this.watson.setContext('invoiceNumberErr', 'We are unable to find your invoice number');
+                }
+                else{
+                    this.watson.setContext('counter', 0);
+                    this.watson.setContext('invoiceNumberErr', false);
+                    this.watson.setContext('validInvoiceNumber', dbResultSet[0][0]);
+                }
+                
+
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                    });
+
+            }).catch((err) => {
+                logger.error(err);
+                this.watson.setContext('invoiceNumberErr', err.errorMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            });
+        });
+    }
+
+    checkMaterialNumber(){
+        logger.debug("Check Invoice number Code called...");
+        return new Promise((resolve, reject) => {
+            this.watson.setContext('checkMaterial', false);
+
+            let materialNumber = this.watson.getContext('materialNumber');
+
+            db.executeQuery(`Select 
+            RECENT_SI_DATA.SERVICE_ISSUE_NUMBER As SERVICE_ISSUE_NUMBER1, 
+            RECENT_SI_DATA.STATUS_TEXT, 
+            RECENT_SI_DATA.Soldto, 
+            RECENT_SI_DATA.SoldtoName, 
+            RECENT_SI_DATA.ReferenceInvoice, 
+            RECENT_SI_DATA.CREDIT_MEMO 
+            From RECENT_SI_DATA 
+            Where RECENT_SI_DATA.ReferenceInvoice = '${materialNumber.invoice_number}'
+            And RECENT_SI_DATA.Material = '${materialNumber.material_number}'`)
+            .then((dbResultSet) => {
+
+                if(dbResultSet === undefined || dbResultSet[0].length == 0){
+                    this.watson.setContext('materialNumberErr', 'We are unable to find your material number');
+                }
+                else{
+                    this.watson.setContext('counter', 0);
+                    this.watson.setContext('materialNumberErr', false);
+                    this.watson.setContext('validMaterialNumber', dbResultSet[0][0]);
+
+                    //set the validServiceIssue context as it is common for all 3 scenarios
+                    this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
+                }
+                
+    
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                    });
+            }).catch((err) => {
+                logger.error(err);
+                this.watson.setContext('materialNumberErr', err.result.errorMessage);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            });
         });
     }
 }
