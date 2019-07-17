@@ -85,8 +85,12 @@ module.exports = class Reports {
                   (${sR.UniqueID},${Source},${userEmail},${sR.Timestamp},${sR.ReportType},${sR.Soldto},${sR.ContractTypes},${sR.GPO},
                    ${sR.UsageTimeframe},${sR.ReportStartDate},${sR.ReportEndDate},${sR.RequestText})`
                 }).then((dbResultSet) => {
-                    console.log(dbResultSet);
+                    if(dbResultSet.rowsAffected[0] == 1){
                     this.watson.setContext("isReportSubmitted", true);
+                    }
+                    else {
+                        this.watson.setContext("submitreporterr", true);
+                    }
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -94,7 +98,6 @@ module.exports = class Reports {
                 }).catch(err => {
                     // ... error checks
                     console.log(err)
-                    sql.close();
                     this.watson.setContext("submitreporterr", true);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
