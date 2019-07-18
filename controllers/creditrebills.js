@@ -35,7 +35,7 @@ module.exports = class CreditRebills {
                 else {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('serviceIssueErr', false);
-                    this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0]);
+                    this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0][0]);
                 }
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
@@ -78,7 +78,7 @@ module.exports = class CreditRebills {
                 else {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('invoiceNumberErr', false);
-                    this.watson.setContext('validInvoiceNumber', dbResultSet['recordsets'][0]);
+                    this.watson.setContext('validInvoiceNumber', dbResultSet['recordsets'][0][0]);
                 }
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
@@ -120,10 +120,10 @@ module.exports = class CreditRebills {
                 else {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('materialNumberErr', false);
-                    this.watson.setContext('validMaterialNumber', dbResultSet['recordsets'][0]);
+                    this.watson.setContext('validMaterialNumber', dbResultSet['recordsets'][0][0]);
 
                     //set the validServiceIssue context as it is common for all 3 scenarios
-                    this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0]);
+                    //this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0]);
                 }
 
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
