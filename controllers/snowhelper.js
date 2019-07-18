@@ -10,7 +10,7 @@ module.exports = class ServiceNow {
         return new Promise((resolve, reject) => {
             const grUser = new glideRecord('sys_user');
             grUser.setReturnFields('sys_id, email');
-            grUser.addEncodedQuery(`user_name=${uid}`);
+            grUser.addEncodedQuery(`user_name=${uid}^active=true`);
             grUser.setLimit(1);
             grUser.query().then(function (result) {
                 if (result.length > 0) {
