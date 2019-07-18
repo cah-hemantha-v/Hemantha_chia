@@ -6,6 +6,7 @@ const pricing = require('./pricing');
 const ServiceNow = require('./snowhelper');
 const membership = require('./membership');
 const reports = require('./reports');
+const creditrebills = require('./creditrebills');
 
 module.exports = class ChiaController {
     constructor() {
@@ -14,6 +15,7 @@ module.exports = class ChiaController {
         this.pricing = new pricing();
         this.membership = new membership();
         this.reports = new reports();
+        this.creditrebills = new creditrebills();
     }
 
     setIpriceUid(uid) {
@@ -28,6 +30,7 @@ module.exports = class ChiaController {
         this.pricing.watson.setResponse(response);
         this.membership.watson.setResponse(response);
         this.reports.watson.setResponse(response);
+        this.creditrebills.watson.setResponse(response);
     }
 
     updateConversationLog(uid) {
@@ -62,6 +65,10 @@ module.exports = class ChiaController {
         else if (this.watson.getContext("Submit_Proposal")) return (this.pricing.submitProposal());
         else if (this.watson.getContext("Check_PriceBook")) return (this.reports.checkPriceBook());
         else if (this.watson.getContext("Submit_PriceBook")) return (this.reports.submitPriceBookRequest());
+        else if (this.watson.getContext("checkServiceIssue")) return (this.creditrebills.checkServiceIssue());
+        else if (this.watson.getContext("checkInvoiceNumber")) return (this.creditrebills.checkInvoiceNumber());
+        else if (this.watson.getContext("checkMaterial")) return (this.creditrebills.checkMaterialNumber());
+        else if (this.watson.getContext("checkLastTenSoldTo")) return (this.creditrebills.checkLastTenSoldTo());
         else if (this.watson.getContext("Submit_Report")) return (this.reports.submitReportRequest(uid));
         else return (this.watson.response);
     }
