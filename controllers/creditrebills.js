@@ -154,18 +154,24 @@ module.exports = class CreditRebills{
             this.watson.setContext('checkLastTenSoldTo', false);
 
             let lastTenSoldToNumber = this.watson.getContext('lastTenSoldToNumber');
+            let soldToNumber = lastTenSoldToNumber.soldto;
+            if(soldToNumber.length === 10 && soldToNumber.substring(0,2) === '00'){
+                soldToNumber = soldToNumber.substring(2);
+            }
+            
 
                         //call to Sql database to get
 
-                        db.executeQuery(`Select 
-                        RECENT_SI_DATA.SERVICE_ISSUE_NUMBER As SERVICE_ISSUE_NUMBER1, 
+                        db.executeQuery(`Select Top 10 
                         RECENT_SI_DATA.STATUS_TEXT, 
+                        RECENT_SI_DATA.SERVICE_ISSUE_NUMBER, 
                         RECENT_SI_DATA.Soldto, 
                         RECENT_SI_DATA.SoldtoName, 
                         RECENT_SI_DATA.ReferenceInvoice, 
                         RECENT_SI_DATA.CREDIT_MEMO 
                         From RECENT_SI_DATA 
-                        Where RECENT_SI_DATA.Soldto = '${lastTenSoldToNumber.soldto}'`)
+                        Where RECENT_SI_DATA.Soldto = ${soldToNumber} 
+                        Order By RECENT_SI_DATA.SI_Date Desc`)
                         .then((dbResultSet) => {
                             //logger.debug(dbResultSet);
                             
@@ -176,10 +182,57 @@ module.exports = class CreditRebills{
                             else{
                                 this.watson.setContext('counter', 0);
                                 this.watson.setContext('lastTenSoldToErr', false);
-                                this.watson.setContext('validSoldTo', dbResultSet[0][0]);
+                                let payloadArray = [];
+                                payloadArray.push({
+                                    'type': 'table',
+                                    'values': []
+                                },
+                                {
+                                    'type': 'text',
+                                    'values': ['Would you like to check onanother service issue?']
+                                }, {
+                                    'type': 'button',
+                                    'values': ['yes', 'no']
+                                });
+
+                                dbResultSet[0].forEach(element => {
+                                    payloadArray[0].values.push(
+                                        `<table style='width: 100%;' border='1' cellpadding='10'>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Customer Name</td>
+                                                    <td>${element.SoldtoName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Customer Soldto</td>
+                                                    <td>${element.Soldto}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Reference</td>
+                                                    <td>${element.ReferenceInvoice}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Service Issue</td>
+                                                    <td>${element.SERVICE_ISSUE_NUMBER}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Status</td>
+                                                    <td>${element.STATUS_TEXT}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Net Credit</td>
+                                                    <td>${element.CREDIT_MEMO}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>`
+                                    );
+                                });
+
+                                this.watson.setContext('chiapayload', payloadArray);
+                                this.watson.setContext('validSoldTo', dbResultSet[0]);
 
                                  //set the validServiceIssue context as it is common for all 3 scenarios
-                                this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
+                                //this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
                             }
                             
                            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
