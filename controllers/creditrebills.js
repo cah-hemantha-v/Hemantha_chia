@@ -28,7 +28,7 @@ module.exports = class CreditRebills {
                 From RECENT_SI_DATA 
                 Where RECENT_SI_DATA.SERVICE_ISSUE_NUMBER = ${serviceIssueNumber.service_issue_number}`
             }).then((dbResultSet) => {
-                //logger.debug(dbResultSet);
+
                 if (dbResultSet === undefined || dbResultSet['recordsets'][0].length == 0) {
                     this.watson.setContext('serviceIssueErr', 'We are unable to find your service issue');
                 }
@@ -113,7 +113,7 @@ module.exports = class CreditRebills {
                 Where RECENT_SI_DATA.ReferenceInvoice = ${materialNumber.invoice_number}
                 And RECENT_SI_DATA.Material = ${materialNumber.material_number}`
             }).then((dbResultSet) => {
-                console.log("dbResult",dbResultSet);
+
                 if (dbResultSet === undefined || dbResultSet['recordsets'][0].length == 0) {
                     this.watson.setContext('materialNumberErr', 'We are unable to find your material number');
                 }
@@ -121,11 +121,7 @@ module.exports = class CreditRebills {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('materialNumberErr', false);
                     this.watson.setContext('validMaterialNumber', dbResultSet['recordsets'][0][0]);
-
-                    //set the validServiceIssue context as it is common for all 3 scenarios
-                    //this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0]);
                 }
-
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                     resolve(rest);
                 });
@@ -151,11 +147,9 @@ module.exports = class CreditRebills {
             if(soldToNumber.length === 10 && soldToNumber.substring(0,2) === '00'){
                 soldToNumber = soldToNumber.substring(2);
             }
-            
-
-                        //call to Sql database to get
-                        sql.connect(dbConfig).then(() => {
-                            return sql.query `Select Top 10 
+            //call to Sql database to get
+            sql.connect(dbConfig).then(() => {
+                return sql.query `Select Top 10 
                             RECENT_SI_DATA.STATUS_TEXT, 
                             RECENT_SI_DATA.SERVICE_ISSUE_NUMBER, 
                             RECENT_SI_DATA.Soldto, 
@@ -165,32 +159,30 @@ module.exports = class CreditRebills {
                             From RECENT_SI_DATA 
                             Where RECENT_SI_DATA.Soldto = ${soldToNumber} 
                             Order By RECENT_SI_DATA.SI_Date Desc`
-                        }).then((dbResultSet) => {
-                            //logger.debug(dbResultSet);
-                            
-                            
-                            if(dbResultSet === undefined || dbResultSet['recordsets'][0].length == 0){
-                                this.watson.setContext('lastTenSoldToErr', 'We are unable to find your Soldto number');
-                            }
-                            else{
-                                this.watson.setContext('counter', 0);
-                                this.watson.setContext('lastTenSoldToErr', false);
-                                let payloadArray = [];
-                                payloadArray.push({
-                                    'type': 'table',
-                                    'values': []
-                                },
-                                {
-                                    'type': 'text',
-                                    'values': ['Would you like to check onanother service issue?']
-                                }, {
-                                    'type': 'button',
-                                    'values': ['yes', 'no']
-                                });
+            }).then((dbResultSet) => {
 
-                                dbResultSet['recordsets'][0].forEach(element => {
-                                    payloadArray[0].values.push(
-                                        `<table style='width: 100%;' border='1' cellpadding='10'>
+                if(dbResultSet === undefined || dbResultSet['recordsets'][0].length == 0){
+                    this.watson.setContext('lastTenSoldToErr', 'We are unable to find your Soldto number');
+                }
+                else{
+                    this.watson.setContext('counter', 0);
+                    this.watson.setContext('lastTenSoldToErr', false);
+                    let payloadArray = [];
+                    payloadArray.push({
+                        'type': 'table',
+                        'values': []
+                    },
+                        {
+                            'type': 'text',
+                            'values': ['Would you like to check on another service issue?']
+                        }, {
+                            'type': 'button',
+                            'values': ['yes', 'no']
+                        });
+
+                    dbResultSet['recordsets'][0].forEach(element => {
+                        payloadArray[0].values.push(
+                            `<table style='width: 100%;' border='1' cellpadding='10'>
                                             <tbody>
                                                 <tr>
                                                     <td>Customer Name</td>
@@ -218,28 +210,25 @@ module.exports = class CreditRebills {
                                                 </tr>
                                             </tbody>
                                         </table>`
-                                    );
-                                });
+                        );
+                    });
 
-                                this.watson.setContext('chiapayload', payloadArray);
-                                this.watson.setContext('validSoldTo', dbResultSet['recordsets'][0]);
+                    this.watson.setContext('chiapayload', payloadArray);
+                    this.watson.setContext('validSoldTo', dbResultSet['recordsets'][0]);
+                }
 
-                                 //set the validServiceIssue context as it is common for all 3 scenarios
-                                //this.watson.setContext('validServiceIssue', dbResultSet[0][0]);
-                            }
-                            
-                           this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                            resolve(rest);
-                            });
-                            sql.close();
-                        }).catch((err) => {
-                            logger.error(err);
-                            sql.close();
-                            this.watson.setContext("lastTenSoldToErr", err);
-                            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                                resolve(rest);
-                            });
-                        });
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+                sql.close();
+            }).catch((err) => {
+                logger.error(err);
+                sql.close();
+                this.watson.setContext("lastTenSoldToErr", err);
+                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                    resolve(rest);
+                });
+            });
         });
 
     }
