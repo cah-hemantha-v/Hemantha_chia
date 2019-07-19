@@ -35,6 +35,48 @@ module.exports = class CreditRebills {
                 else {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('serviceIssueErr', false);
+                    let element = dbResultSet['recordsets'][0][0];
+                    let payloadArray = [];
+                    payloadArray.push({
+                        'type': 'table',
+                        'values': [`<table style='width: 100%;' border='1' cellpadding='10'>
+                        <tbody>
+                            <tr>
+                                <td class='table-chia'>Customer Name</td>
+                                <td>${element.SoldtoName}</td>
+                            </tr>
+                            <tr>
+                                <td>Customer Soldto</td>
+                                <td>${element.Soldto}</td>
+                            </tr>
+                            <tr>
+                                <td>Reference</td>
+                                <td>${element.ReferenceInvoice}</td>
+                            </tr>
+                            <tr>
+                                <td>Service Issue</td>
+                                <td>${element.SERVICE_ISSUE_NUMBER1}</td>
+                            </tr>
+                            <tr>
+                                <td>Status</td>
+                                <td>${element.STATUS_TEXT}</td>
+                            </tr>
+                            <tr>
+                                <td>Net Credit</td>
+                                <td>${element.CREDIT_MEMO}</td>
+                            </tr>
+                        </tbody>
+                    </table>`]
+                    },
+                        {
+                            'type': 'text',
+                            'values': ['Would you like to check on another service issue?']
+                        }, {
+                            'type': 'button',
+                            'values': ['yes', 'no']
+                        });
+                        
+                    this.watson.setContext('chiapayload', payloadArray);
                     this.watson.setContext('validServiceIssue', dbResultSet['recordsets'][0][0]);
                 }
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
@@ -120,6 +162,48 @@ module.exports = class CreditRebills {
                 else {
                     this.watson.setContext('counter', 0);
                     this.watson.setContext('materialNumberErr', false);
+                    let element = dbResultSet['recordsets'][0][0];
+                    let payloadArray = [];
+                    payloadArray.push({
+                        'type': 'table',
+                        'values': [`<table style='width: 100%;' border='1' cellpadding='10'>
+                        <tbody>
+                            <tr>
+                                <td class='table-chia'>Customer Name</td>
+                                <td>${element.SoldtoName}</td>
+                            </tr>
+                            <tr>
+                                <td>Customer Soldto</td>
+                                <td>${element.Soldto}</td>
+                            </tr>
+                            <tr>
+                                <td>Reference</td>
+                                <td>${element.ReferenceInvoice}</td>
+                            </tr>
+                            <tr>
+                                <td>Service Issue</td>
+                                <td>${element.SERVICE_ISSUE_NUMBER1}</td>
+                            </tr>
+                            <tr>
+                                <td>Status</td>
+                                <td>${element.STATUS_TEXT}</td>
+                            </tr>
+                            <tr>
+                                <td>Net Credit</td>
+                                <td>${element.CREDIT_MEMO}</td>
+                            </tr>
+                        </tbody>
+                    </table>`]
+                    },
+                        {
+                            'type': 'text',
+                            'values': ['Would you like to check on another service issue?']
+                        }, {
+                            'type': 'button',
+                            'values': ['yes', 'no']
+                        });
+                    
+                    this.watson.setContext('chiapayload', payloadArray);
                     this.watson.setContext('validMaterialNumber', dbResultSet['recordsets'][0][0]);
                 }
                 this.watson.watsonPostMessage(this.watson.response).then((rest) => {
