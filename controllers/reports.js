@@ -55,12 +55,12 @@ module.exports = class Reports {
                     this.watson.setContext("counter", 0);
                     this.watson.setContext("submitpricebookerr", false);
                     this.watson.setContext("submitPriceBookResponse", submitResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
                 } else if (submitResponse.statusCode == 404) {
                     this.watson.setContext("submitpricebookerr", submitResponse.result.errorMessage);
                 }
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
             }).catch((err) => {
                 logger.error(err);
                 this.watson.setContext("submitpricebookerr", err.result.errorMessage);
@@ -85,10 +85,9 @@ module.exports = class Reports {
                   (${sR.UniqueID},${Source},${userEmail},${sR.Timestamp},${sR.ReportType},${sR.Soldto},${sR.ContractTypes},${sR.GPO},
                    ${sR.UsageTimeframe},${sR.ReportStartDate},${sR.ReportEndDate},${sR.RequestText})`
                 }).then((dbResultSet) => {
-                    if(dbResultSet.rowsAffected[0] == 1){
-                    this.watson.setContext("isReportSubmitted", true);
-                    }
-                    else {
+                    if (dbResultSet.rowsAffected[0] == 1) {
+                        this.watson.setContext("isReportSubmitted", true);
+                    } else {
                         this.watson.setContext("submitreporterr", true);
                     }
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
