@@ -27,9 +27,10 @@ module.exports = class Membership {
                     this.watson.setContext("counter", 0);
                     this.watson.setContext("soldtoerr", false);
                     this.watson.setContext("customer_name", soldtoResponse.result.customerName);
-                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div> Customer: <b>${soldtoResponse.result.customerName}</b> - <b>${sold_to}</b></div>`
-                    this.watson.response.output.text[1] = `What is the CAH Material for which you'd like to get the eligibility details?`;
-                    resolve(this.watson.response);
+                    this.watson.setContext('customer_details', soldtoResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
                 } else if (soldtoResponse.statusCode == 404) {
                     this.handleError(soldtoResponse.result, 'soldtoerr').then(data => {
                         resolve(data);
@@ -115,7 +116,12 @@ module.exports = class Membership {
                             }
                         }
                     }
+                    this.watson.setContext('material_processed',true);
                     this.watson.response.output.text.push(`Would you like to check another membership request?`);
+                    this.watson.response.output.chiapayload = [{
+                        "type":"button",
+                        "values":["Yes","No"]
+                    }]
                     resolve(this.watson.response);
                 } else if (membershipResponse.statusCode == 404) {
                     this.handleError(membershipResponse.result, 'no_agreement').then(data => {
