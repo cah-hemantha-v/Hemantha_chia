@@ -52,6 +52,8 @@ module.exports = class iPrice {
             request(options, (error, response, body) => {
                 if (!error) {
                     let respBody = JSON.parse(body);
+                    console.log(`iPrice Response-- ${response.statusCode}`);
+                    console.log(respBody);
                     respBody.statusCode = response.statusCode;
                     if (response.statusCode == 200 || response.statusCode == 300 || response.statusCode == 404) resolve(respBody);
                     else if (response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502 || response.statusCode == 500) reject(respBody);
@@ -118,12 +120,12 @@ module.exports = class iPrice {
         return this.getIPrice(membershipUrl, qs);
     }
 
-    deleteProposal(pid,workspace) {
+    deleteProposal(deleteObj) {
         logger.debug("3. Inside deleteProposal() function.");
         const proposalDelUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: pid,
-            workspace: workspace
+            proposalId: deleteObj.pid,
+            workspace: deleteObj.workspace
         }
         return this.deleteIprice(proposalDelUrl, qs);
     }

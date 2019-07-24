@@ -47,10 +47,10 @@ module.exports = class Pricing {
                 }
             }).catch((err) => {
                 logger.error(err);
-                this.watson.setContext("soldtoerr", err.result.errorMessage);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                // this.watson.setContext("soldtoerr", err.result.errorMessage);
+                // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                //     resolve(rest);
+                // });
             });
         });
     }
@@ -127,8 +127,10 @@ module.exports = class Pricing {
                     this.watson.setContext('PriceQuote', cepResponse.result);
                     if (!cepResponse.result.editingPermitted) {
                         let checkpricing = this.watson.getContext('checkpricing');
-                        console.log(`checkpricing-- ${checkpricing.workspace}`);
-                        this.deleteProposal(cepResponse.result.proposalId, checkpricing.workspace).then((status) => {
+                        checkpricing.pid = cepResponse.result.proposalId;
+                        console.log(`checkpricing workspace-- ${checkpricing.workspace}`);
+                        console.log(`checkpricing pid-- ${checkpricing.pid}`);
+                        this.deleteProposal(checkpricing).then((status) => {
                             if (status) {
                                 logger.info(`PID: ${cepResponse.result.proposalId} is deleted`);
                                 return true;
@@ -226,14 +228,14 @@ module.exports = class Pricing {
         });
     }
 
-    deleteProposal(pid, workspace) {
+    deleteProposal(deleteObj) {
         logger.debug("2. Inside deleteProposal() function.");
         this.watson.setContext('Delete_Proposal', false);
         return new Promise((resolve, reject) => {
-            this.iprice.deleteProposal(pid, workspace).then((delResponse) => {
+            this.iprice.deleteProposal(deleteObj).then((delResponse) => {
                 logger.info(`delResponse-${JSON.stringify(delResponse)}`);
                 if (delResponse.result.success) {
-                    logger.info(`PID: ${pid} is deleted successfully`);
+                    logger.info(`PID: ${JSON.stringify(deleteObj)} is deleted successfully`);
                     resolve(this.watson.response);
                 }
             }).catch((error) => {
