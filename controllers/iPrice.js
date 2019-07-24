@@ -48,7 +48,7 @@ module.exports = class iPrice {
                 qs: qs,
                 headers: this.headers
             };
-            console.log(JSON.stringify(options));
+            logger.debug(`options--${JSON.stringify(options)}`);
             request(options, (error, response, body) => {
                 if (!error) {
                     let respBody = JSON.parse(body);
@@ -138,7 +138,8 @@ module.exports = class iPrice {
             amount: submitProposal.amount,
             fromDate: submitProposal.start_date,
             toDate: submitProposal.end_date,
-            prcMessage: submitProposal.prcMessage
+            prcMessage: submitProposal.prcMessage,
+            workspace: submitProposal.workspace
         };
         return this.putIprice(proposalUrl, qs);
     }
@@ -149,7 +150,8 @@ module.exports = class iPrice {
         const qs = {
             proposalId: submitProposal.proposalId,
             lineNum: submitProposal.lineNum,
-            governanceReason: submitProposal.governanceReason
+            governanceReason: submitProposal.governanceReason,
+            workspace: submitProposal.workspace
         };
         return this.PostIPrice(proposalsubmitUrl, qs);
     }
