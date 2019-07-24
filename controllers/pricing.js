@@ -13,30 +13,37 @@ module.exports = class Pricing {
         return new Promise((resolve, reject) => {
             this.watson.setContext("CheckSoldto", false);
             let checkpricing = this.watson.getContext("checkpricing");
-            this.iprice.checkSoldToCustomer(checkpricing.soldto).then((soldToBody) => {
-                this.watson.setContext("counter", 0);
-                this.watson.setContext("soldtoerr", false);
-                const distChannels = soldToBody.result.distributionChannelIds;
-                let dc = [];
-                distChannels.forEach(element => {
-                    dc.push(`${element.id} - ${element.description}`);
-                });
-                this.watson.setContext("dist_channel", dc);
-                if (dc.length > 1) {
-                    this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${soldToBody.result.customerName}</b></div>`;
-                    this.watson.response.output.text[1] = 'Please select the distribution channel.';
-                    this.watson.response.output.chiapayload = [{
-                        'type': 'button',
-                        'values': dc
-                    }];
-                    resolve(this.watson.response);
-                } else if (dc.length == 1) {
-                    this.watson.response.input.text = dc.toString();
-                    this.watson.setContext("singleDc", true);
-                    this.watson.setContext("customer_name", soldToBody.result.customerName);
-                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                        resolve(rest);
+            this.iprice.checkSoldToCustomer(checkpricing.soldto).then((soldtoResponse) => {
+                if (soldtoResponse.statusCode == 404) {
+                    this.handleError(soldtoResponse.result, 'soldtoerr').then(data => {
+                        resolve(data)
                     });
+                } else if (soldtoResponse.statusCode == 200) {
+                    console.log(`soldtoResponse-${JSON.stringify(soldtoResponse)}`);
+                    this.watson.setContext("counter", 0);
+                    this.watson.setContext("soldtoerr", false);
+                    const distChannels = soldtoResponse.result.distributionChannelIds;
+                    let dc = [];
+                    distChannels.forEach(element => {
+                        dc.push(`${element.id} - ${element.description}`);
+                    });
+                    this.watson.setContext("dist_channel", dc);
+                    if (dc.length > 1) {
+                        this.watson.response.output.text[0] = `<div>Here is the customer you have entered:</div><div>Customer: <b>${soldtoResponse.result.customerName}</b></div>`;
+                        this.watson.response.output.text[1] = 'Please select the distribution channel.';
+                        this.watson.response.output.chiapayload = [{
+                            'type': 'button',
+                            'values': dc
+                        }];
+                        resolve(this.watson.response);
+                    } else if (dc.length == 1) {
+                        this.watson.response.input.text = dc.toString();
+                        this.watson.setContext("singleDc", true);
+                        this.watson.setContext("customer_name", soldtoResponse.result.customerName);
+                        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                            resolve(rest);
+                        });
+                    }
                 }
             }).catch((err) => {
                 logger.error(err);
@@ -48,32 +55,47 @@ module.exports = class Pricing {
         });
     }
 
+    handleError(error, errorType) {
+        return new Promise((resolve, reject) => {
+            this.watson.setContext(errorType, error.errorMessage);
+            this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                resolve(rest);
+            });
+        })
+    }
+
     checkMaterial() {
         logger.debug("2. Inside checkMaterial() function.");
         return new Promise((resolve, reject) => {
             this.watson.response.context.CheckMaterial = false;
             this.watson.response.context.matNumErr = false;
             let checkpricing = this.watson.getContext("checkpricing");
-            this.iprice.checkMaterialNum(checkpricing.cah_material).then((matNumBody) => {
-                const uom = ['Sales'].concat(matNumBody.result.unitOfMeasures);
-                this.watson.response.context.counter = 0;
-                this.watson.response.context.uom = uom;
-                this.watson.response.output.chiapayload = [{
-                        'type': 'text',
-                        'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
-                                        <div>Vendor: <b>${matNumBody.result.vendorName}</b></div><div>Material Description: <b>${matNumBody.result.materialDescription}</b></div>`]
-                    },
-                    {
-                        'type': 'text',
-                        'values': [`<div>What is the UOM you would like checked? </div>
-                                                <div>You can choose one of the several options below or type in your own UOM.</div>`]
-                    },
-                    {
-                        'type': 'button',
-                        'values': uom
-                    }
-                ];
-                resolve(this.watson.response);
+            this.iprice.checkMaterialNum(checkpricing.cah_material).then((materialResponse) => {
+                if (materialResponse.statusCode == 404) {
+                    this.handleError(materialResponse.result, 'matNumErr').then(data => {
+                        resolve(data)
+                    });
+                } else if (materialResponse.statusCode == 200) {
+                    const uom = ['Sales'].concat(materialResponse.result.unitOfMeasures);
+                    this.watson.response.context.counter = 0;
+                    this.watson.response.context.uom = uom;
+                    this.watson.response.output.chiapayload = [{
+                            'type': 'text',
+                            'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
+                                            <div>Vendor: <b>${materialResponse.result.vendorName}</b></div><div>Material Description: <b>${materialResponse.result.materialDescription}</b></div>`]
+                        },
+                        {
+                            'type': 'text',
+                            'values': [`<div>What is the UOM you would like checked? </div>
+                                                    <div>You can choose one of the several options below or type in your own UOM.</div>`]
+                        },
+                        {
+                            'type': 'button',
+                            'values': uom
+                        }
+                    ];
+                    resolve(this.watson.response);
+                }
             }).catch((err) => {
                 logger.error(err);
                 this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err.result.errorMessage}`;
@@ -123,7 +145,7 @@ module.exports = class Pricing {
                     }
                 } else if (cepResponse.statusCode == 404) {
                     this.watson.setContext('pricequote_err', true);
-                    this.watson.setContext('pricequote_errmessage',cepResponse.result);
+                    this.watson.setContext('pricequote_errmessage', cepResponse.result);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
@@ -204,11 +226,11 @@ module.exports = class Pricing {
         });
     }
 
-    deleteProposal(pid,workspace) {
+    deleteProposal(pid, workspace) {
         logger.debug("2. Inside deleteProposal() function.");
         this.watson.setContext('Delete_Proposal', false);
         return new Promise((resolve, reject) => {
-            this.iprice.deleteProposal(pid,workspace).then((delResponse) => {
+            this.iprice.deleteProposal(pid, workspace).then((delResponse) => {
                 logger.info(`delResponse-${JSON.stringify(delResponse)}`);
                 if (delResponse.result.success) {
                     logger.info(`PID: ${pid} is deleted successfully`);
@@ -229,13 +251,20 @@ module.exports = class Pricing {
             this.watson.setContext("governanceerr", false);
             //let priceQuote = this.watson.getContext("PriceQuote");
             let submitProposal = this.watson.getContext("submitproposal");
+            console.log(submitProposal);
             this.iprice.updatePricingProposal(submitProposal).then((proposalResponse) => {
-                logger.info('printing proposalResponse');
-                logger.debug(proposalResponse);
-                this.watson.setContext("govEngineResponse", proposalResponse.result);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                if (proposalResponse.statusCode == 200) {
+                    logger.info('printing proposalResponse');
+                    logger.debug(proposalResponse);
+                    this.watson.setContext("govEngineResponse", proposalResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (proposalResponse.statusCode == 404) {
+                    this.handleError(proposalResponse.result, 'governanceerr').then(data => {
+                        resolve(data);
+                    });
+                }
             }).catch((err) => {
                 logger.error(err);
                 this.watson.setContext("governanceerr", err.result.errorMessage);
