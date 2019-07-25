@@ -47,6 +47,9 @@ module.exports = class Pricing {
                 }
             }).catch((err) => {
                 logger.error(err);
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                resolve(this.watson.response);
                 // this.watson.setContext("soldtoerr", err.result.errorMessage);
                 // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                 //     resolve(rest);
@@ -98,10 +101,13 @@ module.exports = class Pricing {
                 }
             }).catch((err) => {
                 logger.error(err);
-                this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err.result.errorMessage}`;
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                // this.watson.response.context.matNumErr = `${this.watson.response.context.cah_material} is an ${err.result.errorMessage}`;
+                // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                //     resolve(rest);
+                // });
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                resolve(this.watson.response);
             });
         });
     }
@@ -154,8 +160,11 @@ module.exports = class Pricing {
                 }
             }).catch((err) => {
                 logger.error(`Error Occured during Price Quote Check`);
+                // reject(err);
                 logger.error(err);
-                reject(err);
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                resolve(this.watson.response);
             });
         })
     }
@@ -174,56 +183,76 @@ module.exports = class Pricing {
             this.watson.setContext("Check_Proposal", false);
             this.watson.setContext("proposalerr", false);
             const iPriceUrl = 'http://iprice.cardinalhealth.net/iprice/index.jsp';
-            const proposal_number = this.watson.getContext("proposal_number");
-            logger.info(`proposal number - ${proposal_number}`);
-            this.iprice.checkProposalStatus(proposal_number).then((proposalResponse) => {
-                let payloadArray = [];
-                console.log(`Prop status length -- ${proposalResponse.result.length}`);
-                if (proposalResponse.result.length > 0) {
-                    if (this.watson.getContext("isProposalSpecific")) {
-                        this.watson.setContext("isProposalSpecific", false);
-                        payloadArray.push({
-                            'type': 'table',
-                            'values': []
-                        }, {
-                            'type': 'text',
-                            'values': ['Would you like to check on another proposal?']
-                        }, {
-                            'type': 'button',
-                            'values': ['yes', 'no']
-                        })
-                    } else {
-                        this.watson.setContext('hasProposal', true);
-                        payloadArray.push({
-                            'type': 'table',
-                            'values': []
-                        }, {
-                            'type': 'text',
-                            'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`,
-                                'Can I help you with anything else? Refresh to see all your options.'
-                            ]
-                        })
-                    }
-                    proposalResponse.result.forEach(element => {
-                        payloadArray[0].values.push(
-                            `<table style='width: 100%;' border='1' cellpadding='10'><tbody><tr><td>Proposal Number</td><td>${element.proposalId}</td>` +
-                            `</tr><tr><td>Proposal Type</td><td>${element.proposalType}</td></tr><tr><td>Proposal Description</td><td>${element.proposalDescription}</td>` +
-                            `</tr><tr><td>Customer Name</td><td>${element.customerName}</td></tr><tr><td>Material Count</td><td>${element.totalLineCount}</td></tr><tr><td>Proposal Load Status</td><td>${element.loadStatusDesc}</td></tr></tbody></table>`
-                        );
+            const proposal_status = this.watson.getContext("proposal_status");
+            logger.info(`proposal number - ${JSON.stringify(proposal_status)}`);
+            this.iprice.checkProposalStatus(proposal_status).then((proposalResponse) => {
+                if (proposalResponse.statusCode == 300) {
+                    let positionCodes = [];
+                    this.watson.setContext('hasMultiPosition', true);
+                    proposalResponse.result.positions.forEach(element => {
+                        positionCodes.push(`${element.positionCode} (${element.saleItemGroupDesc})`);
                     });
-                    this.watson.setContext('chiapayload', payloadArray);
-                } else {
-                    this.watson.setContext('hasProposal', false);
+                    proposalResponse.result.positions = positionCodes;
+                    this.watson.setContext('positioncodes', proposalResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (proposalResponse.statusCode == 200) {
+                    let payloadArray = [];
+                    console.log(`Prop status length -- ${proposalResponse.result.length}`);
+                    if (proposalResponse.result.length > 0) {
+                        if (this.watson.getContext("isProposalSpecific")) {
+                            this.watson.setContext("isProposalSpecific", false);
+                            payloadArray.push({
+                                'type': 'table',
+                                'values': []
+                            }, {
+                                'type': 'text',
+                                'values': ['Would you like to check on another proposal?']
+                            }, {
+                                'type': 'button',
+                                'values': ['yes', 'no']
+                            })
+                        } else {
+                            this.watson.setContext('hasProposal', true);
+                            payloadArray.push({
+                                'type': 'table',
+                                'values': []
+                            }, {
+                                'type': 'text',
+                                'values': [`This is all the information I can show you at the moment. For additional information, go to <a href=${iPriceUrl} target="_blank">iPrice</a>`,
+                                    'Can I help you with anything else? Refresh to see all your options.'
+                                ]
+                            })
+                        }
+                        proposalResponse.result.forEach(element => {
+                            payloadArray[0].values.push(
+                                `<table style='width: 100%;' border='1' cellpadding='10'><tbody><tr><td>Proposal Number</td><td>${element.proposalId}</td>` +
+                                `</tr><tr><td>Proposal Type</td><td>${element.proposalType}</td></tr><tr><td>Proposal Description</td><td>${element.proposalDescription}</td>` +
+                                `</tr><tr><td>Customer Name</td><td>${element.customerName}</td></tr><tr><td>Material Count</td><td>${element.totalLineCount}</td></tr><tr><td>Proposal Load Status</td><td>${element.loadStatusDesc}</td></tr></tbody></table>`
+                            );
+                        });
+                        this.watson.setContext('chiapayload', payloadArray);
+                    } else {
+                        this.watson.setContext('hasProposal', false);
+                    }
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (proposalResponse.statusCode == 404) {
+                    this.handleError(proposalResponse.result, 'proposalerr').then(data => {
+                        resolve(data)
+                    });
                 }
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
             }).catch((err) => {
-                logger.error(err);
-                this.watson.response.context.proposalerr = err.result.errorMessage;
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                logger.error(err);                
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                resolve(this.watson.response);
+                // this.watson.response.context.proposalerr = err.result.errorMessage;
+                // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                //     resolve(rest);
+                // });
             });
         });
     }
@@ -269,10 +298,13 @@ module.exports = class Pricing {
                 }
             }).catch((err) => {
                 logger.error(err);
-                this.watson.setContext("governanceerr", err.result.errorMessage);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                // this.watson.setContext("governanceerr", err.result.errorMessage);
+                // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                //     resolve(rest);
+                // });
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                resolve(this.watson.response);
             });
         });
     }

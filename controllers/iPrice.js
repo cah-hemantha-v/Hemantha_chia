@@ -100,12 +100,13 @@ module.exports = class iPrice {
         return this.PostIPrice(pricequoteUrl, qs);
     }
 
-    checkProposalStatus(ProposalNumber) {
+    checkProposalStatus(proposal_status) {
         logger.debug("3. Inside checkProposalStatus() function.");
         const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
-            proposalId: ProposalNumber,
-            returnLimit: 10
+            proposalId: proposal_status.proposal_number,
+            returnLimit: 10,
+            workspace: proposal_status.workspace
         };
         return this.getIPrice(ProposalNumberUrl, qs);
     }
