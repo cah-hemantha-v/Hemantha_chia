@@ -51,6 +51,8 @@ module.exports = class iPrice {
             logger.debug(`options--${JSON.stringify(options)}`);
             request(options, (error, response, body) => {
                 if (!error) {
+                    logger.info(`Printing iPrice body`);
+                    logger.debug(response.statusCode);
                     let respBody = JSON.parse(body);
                     console.log(`iPrice Response-- ${response.statusCode}`);
                     console.log(respBody);

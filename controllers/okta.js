@@ -26,7 +26,7 @@ module.exports = class Okta {
                 try {
                     if (!error) {
                         logger.info("Okta response for user-info")
-                        logger.info(body)
+                        logger.debug(body.name);
                         resolve(body);
                     } else {
                         logger.error(`Error with Okta user info`);

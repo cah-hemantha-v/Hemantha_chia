@@ -48,7 +48,7 @@ module.exports = class Pricing {
             }).catch((err) => {
                 logger.error(err);
                 this.watson.response.output.text[0] = err.result.errorMessage;
-                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
                 resolve(this.watson.response);
                 // this.watson.setContext("soldtoerr", err.result.errorMessage);
                 // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
@@ -105,8 +105,9 @@ module.exports = class Pricing {
                 // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                 //     resolve(rest);
                 // });
+                logger.error(err);
                 this.watson.response.output.text[0] = err.result.errorMessage;
-                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
                 resolve(this.watson.response);
             });
         });
@@ -163,7 +164,7 @@ module.exports = class Pricing {
                 // reject(err);
                 logger.error(err);
                 this.watson.response.output.text[0] = err.result.errorMessage;
-                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
                 resolve(this.watson.response);
             });
         })
@@ -245,9 +246,9 @@ module.exports = class Pricing {
                     });
                 }
             }).catch((err) => {
-                logger.error(err);                
+                logger.error(err);
                 this.watson.response.output.text[0] = err.result.errorMessage;
-                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
                 resolve(this.watson.response);
                 // this.watson.response.context.proposalerr = err.result.errorMessage;
                 // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
@@ -303,7 +304,7 @@ module.exports = class Pricing {
                 //     resolve(rest);
                 // });
                 this.watson.response.output.text[0] = err.result.errorMessage;
-                this.watson.response.output.text[1] = 'please refresh & try again later.'
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
                 resolve(this.watson.response);
             });
         });
@@ -316,19 +317,29 @@ module.exports = class Pricing {
             this.watson.setContext("submitproposalerr", false);
             let submitProposal = this.watson.getContext("submitproposal");
             this.iprice.submitPricingProposal(submitProposal).then((submitResponse) => {
-                logger.info('printing submitResponse');
-                logger.debug(submitResponse);
-                this.watson.setContext("isProposalSubmitted", true);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                if (submitResponse.statusCode == 200) {
+                    logger.info('printing submitResponse');
+                    logger.debug(submitResponse);
+                    this.watson.setContext("isProposalSubmitted", true);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+                } else if (submitProposal.statusCode == 404) {
+                    this.handleError(submitProposal.result, 'submitproposalerr').then(data => {
+                        resolve(data);
+                    })
+                }
             }).catch((err) => {
                 this.watson.setContext("isProposalSubmitted", false);
+                // logger.error(err);
+                // this.watson.setContext("submitproposalerr", err.result.errorMessage);
+                // this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                //     resolve(rest);
+                // });
                 logger.error(err);
-                this.watson.setContext("submitproposalerr", err.result.errorMessage);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
+                resolve(this.watson.response);
             });
         });
 
