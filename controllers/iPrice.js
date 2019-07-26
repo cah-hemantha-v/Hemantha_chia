@@ -51,7 +51,11 @@ module.exports = class iPrice {
             logger.debug(`options--${JSON.stringify(options)}`);
             request(options, (error, response, body) => {
                 if (!error) {
+                    logger.info(`Printing iPrice body`);
+                    logger.debug(response.statusCode);
                     let respBody = JSON.parse(body);
+                    console.log(`iPrice Response-- ${response.statusCode}`);
+                    console.log(respBody);
                     respBody.statusCode = response.statusCode;
                     if (response.statusCode == 200 || response.statusCode == 300 || response.statusCode == 404) resolve(respBody);
                     else if (response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502 || response.statusCode == 500) reject(respBody);
@@ -98,12 +102,13 @@ module.exports = class iPrice {
         return this.PostIPrice(pricequoteUrl, qs);
     }
 
-    checkProposalStatus(ProposalNumber) {
+    checkProposalStatus(proposal_status) {
         logger.debug("3. Inside checkProposalStatus() function.");
         const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
-            proposalId: ProposalNumber,
-            returnLimit: 10
+            proposalId: proposal_status.proposal_number,
+            returnLimit: 10,
+            workspace: proposal_status.workspace
         };
         return this.getIPrice(ProposalNumberUrl, qs);
     }
@@ -118,12 +123,12 @@ module.exports = class iPrice {
         return this.getIPrice(membershipUrl, qs);
     }
 
-    deleteProposal(pid,workspace) {
+    deleteProposal(deleteObj) {
         logger.debug("3. Inside deleteProposal() function.");
         const proposalDelUrl = `${this.url}/iprice/api/proposal`;
         const qs = {
-            proposalId: pid,
-            workspace: workspace
+            proposalId: deleteObj.pid,
+            workspace: deleteObj.workspace
         }
         return this.deleteIprice(proposalDelUrl, qs);
     }
