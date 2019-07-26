@@ -62,7 +62,7 @@ module.exports = class CreditRebills {
                                 <td>${element.STATUS_TEXT}</td>
                             </tr>
                             <tr>
-                                <td>Net Credit</td>
+                                <td>Credit Memo</td>
                                 <td>${element.CREDIT_MEMO}</td>
                             </tr>
                         </tbody>
@@ -189,7 +189,7 @@ module.exports = class CreditRebills {
                                 <td>${element.STATUS_TEXT}</td>
                             </tr>
                             <tr>
-                                <td>Net Credit</td>
+                                <td>Credit Memo</td>
                                 <td>${element.CREDIT_MEMO}</td>
                             </tr>
                         </tbody>
@@ -289,7 +289,7 @@ module.exports = class CreditRebills {
                                                     <td>${element.STATUS_TEXT}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Net Credit</td>
+                                                    <td>Credit Memo</td>
                                                     <td>${element.CREDIT_MEMO}</td>
                                                 </tr>
                                             </tbody>
