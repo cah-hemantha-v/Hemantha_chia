@@ -1,5 +1,5 @@
 const GlideRecord = require('./gliderecord');
-const logger =require('../utils/logger');
+const logger = require('../utils/logger');
 
 module.exports = class SnowLogger {
     constructor() {
@@ -65,6 +65,7 @@ module.exports = class SnowLogger {
                 u_intent_confidence: (chia_obj.intents[0]) ? chia_obj.intents[0].confidence : undefined,
                 u_chia_response: chia_obj.output
             };
+
             snLog.insert(log_obj).then((response) => {
                 logger.debug(`log entry complete with conversation ID - ${response.u_conversation_id}`);
                 resolve(response);
@@ -76,6 +77,7 @@ module.exports = class SnowLogger {
     }
 
     createConversationLog(chia_obj) {
+        logger.info(`creating conversation log entry`);
         const conversation_id = chia_obj.context.conversation_id;
         this.conversationExists(conversation_id).then((exists) => {
             if (!exists) {
@@ -85,8 +87,8 @@ module.exports = class SnowLogger {
                     logger.error(err);
                 });
             } else {
-                this.appendConversationLog(chia_obj)
+                this.appendConversationLog(chia_obj);
             }
-        })
+        });
     }
 }

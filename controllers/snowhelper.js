@@ -5,8 +5,7 @@ module.exports = class ServiceNow {
     constructor() {}
 
     static getUserProfile(uid) {
-        console.log(`UID - ${uid}`)
-        logger.debug("get user profile")
+        logger.debug(`get user profile - ${uid}`)
         return new Promise((resolve, reject) => {
             const grUser = new glideRecord('sys_user');
             grUser.setReturnFields('sys_id, email');
@@ -14,6 +13,7 @@ module.exports = class ServiceNow {
             grUser.setLimit(1);
             grUser.query().then(function (result) {
                 if (result.length > 0) {
+                    logger.info('Return response from user profile query.')
                     logger.debug(result);
                     resolve(result);
                 } else {

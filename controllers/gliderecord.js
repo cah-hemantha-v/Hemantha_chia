@@ -6,10 +6,10 @@ request.debug;
 
 module.exports = class GlideRecord {
     constructor(table, apiversion) {
-        this.user = process.env.SNOW_UID || 'chia.bot';
-        this.pass = process.env.SNOW_PWD || 'J0hnny5';
+        this.user = process.env.SNOW_UID;
+        this.pass = process.env.SNOW_PWD;
         this.params = {};
-        this.instance = process.env.SNOW_INSTANCE_URL || 'cardinalsand';
+        this.instance = process.env.SNOW_INSTANCE_URL;
         this.tablename = table;
         this.apiversion = apiversion? apiversion + '/' : '';
         this.baseurl = 'https://' + this.instance + '.service-now.com/api/now/' + this.apiversion + 'table/' + this.tablename;

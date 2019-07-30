@@ -54,8 +54,8 @@ module.exports = class iPrice {
                     logger.info(`Printing iPrice body`);
                     logger.debug(response.statusCode);
                     let respBody = JSON.parse(body);
-                    console.log(`iPrice Response-- ${response.statusCode}`);
-                    console.log(respBody);
+                    logger.info(`iPrice Response-- ${response.statusCode}`);
+                    logger.debug(respBody);
                     respBody.statusCode = response.statusCode;
                     if (response.statusCode == 200 || response.statusCode == 300 || response.statusCode == 404) resolve(respBody);
                     else if (response.statusCode == 403 || response.statusCode == 401 || response.statusCode == 502 || response.statusCode == 500) reject(respBody);
@@ -168,9 +168,9 @@ module.exports = class iPrice {
             customerNumber: submitPriceBook.customerNumber,
             productType: submitPriceBook.productType,
             baseDate: submitPriceBook.baseDate,
-            compareDate: submitPriceBook.compareDate
+            compareDate: submitPriceBook.compareDate,
+            workspace: submitPriceBook.workspace
         };
         return this.PostIPrice(pricebooksubmitUrl, qs);
     }
-
 }
