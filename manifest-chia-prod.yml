@@ -11,7 +11,7 @@ applications:
     IPRICE_HOST: http://iprice.cardinalhealth.net
     WATSON_APIKEY: P-l1aYwfaklkdLjimRUMXdvV5vsaLP6d_V4M8F4MdQsw
     APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
-    SNOW_INSTANCE: cardinal
+    SNOW_INSTANCE_URL: cardinal
     SNOW_UID: chia.bot
     SNOW_PWD: J0hnny5
     AD_SERVER_URL: 10.50.32.41
