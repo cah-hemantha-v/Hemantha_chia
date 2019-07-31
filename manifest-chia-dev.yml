@@ -11,7 +11,7 @@ applications:
     IPRICE_HOST: http://iprice.dev.cardinalhealth.net
     WATSON_APIKEY: ez8kLq0zcCsq_l8CZ5EKK9YoS3rljftGM6RVz2OTSTtr
     APIGEE_APIKEY: CfeAcU7rFW0EoMhHUAq0mAi86XSmlO4p
-    SNOW_INSTANCE: cardinalsand
+    SNOW_INSTANCE: cardinaldev
     SNOW_UID: chia.bot
     SNOW_PWD: J0hnny5
     AD_SERVER_URL: dev.npch.int
@@ -23,7 +23,7 @@ applications:
     CHIA_SYSID: b46f9c09db8edf0cbe676165ca9619ce
     DB_USERNAME: ABQ_APP_USER
     DB_PASSWORD: Bvr415iD
-    DB_HOST: WPOH0014ESQLB16.cardinalhealth.net
+    DB_HOST: wpec5004esqla01.cardinalhealth.net
     NODE_ENV: development
 routes:
   - route: mp-chia.apps.cf.np.gc.cahcloud.net

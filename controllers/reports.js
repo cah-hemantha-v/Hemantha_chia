@@ -21,9 +21,9 @@ module.exports = class Reports {
             } else {
                 customerNumber = this.watson.getContext('soldto')
             }
-            //let customerNumber = this.watson.getContext("soldto") != null ? this.watson.getContext("soldto") : this.watson.getContext("lcn");
             this.iprice.checkSoldToCustomer(customerNumber).then((soldToBody) => {
-                console.log(soldToBody);
+                logger.info(`soldto response`);
+                logger.debug(soldToBody);
                 if (soldToBody.statusCode == 200) {
                     this.watson.setContext("counter", 0);
                     this.watson.setContext("checkpricebookerr", false);
@@ -51,7 +51,19 @@ module.exports = class Reports {
             this.watson.setContext("Submit_PriceBook", false);
             let submitPriceBook = this.watson.getContext("submitpricebook");
             this.iprice.submitPriceCatalog(submitPriceBook).then((submitResponse) => {
-                if (submitResponse.statusCode == 200) {
+                if (submitResponse.statusCode == 300) {
+                    let positionCodes = [];
+                    this.watson.setContext('hasMultiPosition', true);
+                    submitResponse.result.positions.forEach(element => {
+                        positionCodes.push(`${element.positionCode} (${element.saleItemGroupDesc})`);
+                    });
+                    submitResponse.result.positions = positionCodes;
+                    this.watson.setContext('positioncodes', submitResponse.result);
+                    this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                        resolve(rest);
+                    });
+
+                } else if (submitResponse.statusCode == 200) {
                     this.watson.setContext("counter", 0);
                     this.watson.setContext("submitpricebookerr", false);
                     this.watson.setContext("submitPriceBookResponse", submitResponse.result);

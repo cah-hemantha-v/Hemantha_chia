@@ -11,7 +11,7 @@ function getUid(request, response, next) {
             text: ['Your session has expired. Please refresh the page to login again.']
         }
     }
-    if (!token)  return response.status(200).json(chiaOutput);
+    if (!token) return response.status(200).json(chiaOutput);
     else {
         new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
             let oktaResponse = JSON.parse(body);

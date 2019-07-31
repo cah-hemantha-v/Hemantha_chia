@@ -22,7 +22,7 @@ applications:
     CHIA_SYSID: b46f9c09db8edf0cbe676165ca9619ce
     DB_USERNAME: ABQ_APP_USER
     DB_PASSWORD: Bvr415iD
-    DB_HOST: WPOH0014ESQLB16.cardinalhealth.net
+    DB_HOST: wpec5004esqla01.cardinalhealth.net
     NODE_ENV: production
 routes:
   - route: mp-chia-stg.apps.cf.np.gc.cahcloud.net
