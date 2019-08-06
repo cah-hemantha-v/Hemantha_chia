@@ -37,10 +37,9 @@ module.exports = class Reports {
                 });
             }).catch((err) => {
                 logger.error(err);
-                this.watson.setContext("checkpricebookerr", err.result.errorMessage);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
+                resolve(this.watson.response);
             });
         });
     }
@@ -75,10 +74,9 @@ module.exports = class Reports {
                 }
             }).catch((err) => {
                 logger.error(err);
-                this.watson.setContext("submitpricebookerr", err.result.errorMessage);
-                this.watson.watsonPostMessage(this.watson.response).then((rest) => {
-                    resolve(rest);
-                });
+                this.watson.response.output.text[0] = err.result.errorMessage;
+                this.watson.response.output.text[1] = 'please refresh the page & try again later.'
+                resolve(this.watson.response);
             });
         });
     }

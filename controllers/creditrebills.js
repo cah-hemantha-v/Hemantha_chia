@@ -39,30 +39,30 @@ module.exports = class CreditRebills {
                     let payloadArray = [];
                     payloadArray.push({
                         'type': 'table',
-                        'values': [`<table style='width: 100%;' border='1' cellpadding='10'>
+                        'values': [`<table style='width: 100%;' cellpadding='10'>
                         <tbody>
                             <tr>
-                                <td class='table-chia'>Customer Name</td>
+                                <td class='table-chia'>Customer Name:</td>
                                 <td>${element.SoldtoName}</td>
                             </tr>
                             <tr>
-                                <td>Customer Soldto</td>
+                                <td>Customer Soldto:</td>
                                 <td>${element.Soldto}</td>
                             </tr>
                             <tr>
-                                <td>Reference</td>
+                                <td>Reference:</td>
                                 <td>${element.ReferenceInvoice}</td>
                             </tr>
                             <tr>
-                                <td>Service Issue</td>
+                                <td>Service Issue:</td>
                                 <td>${element.SERVICE_ISSUE_NUMBER1}</td>
                             </tr>
                             <tr>
-                                <td>Status</td>
+                                <td>Status:</td>
                                 <td>${element.STATUS_TEXT}</td>
                             </tr>
                             <tr>
-                                <td>Credit Memo</td>
+                                <td>Credit Memo:</td>
                                 <td>${element.CREDIT_MEMO}</td>
                             </tr>
                         </tbody>
@@ -166,30 +166,30 @@ module.exports = class CreditRebills {
                     let payloadArray = [];
                     payloadArray.push({
                         'type': 'table',
-                        'values': [`<table style='width: 100%;' border='1' cellpadding='10'>
+                        'values': [`<table style='width: 100%;' cellpadding='10'>
                         <tbody>
                             <tr>
-                                <td class='table-chia'>Customer Name</td>
+                                <td class='table-chia'>Customer Name:</td>
                                 <td>${element.SoldtoName}</td>
                             </tr>
                             <tr>
-                                <td>Customer Soldto</td>
+                                <td>Customer Soldto:</td>
                                 <td>${element.Soldto}</td>
                             </tr>
                             <tr>
-                                <td>Reference</td>
+                                <td>Reference:</td>
                                 <td>${element.ReferenceInvoice}</td>
                             </tr>
                             <tr>
-                                <td>Service Issue</td>
+                                <td>Service Issue:</td>
                                 <td>${element.SERVICE_ISSUE_NUMBER1}</td>
                             </tr>
                             <tr>
-                                <td>Status</td>
+                                <td>Status:</td>
                                 <td>${element.STATUS_TEXT}</td>
                             </tr>
                             <tr>
-                                <td>Credit Memo</td>
+                                <td>Credit Memo:</td>
                                 <td>${element.CREDIT_MEMO}</td>
                             </tr>
                         </tbody>
@@ -266,30 +266,30 @@ module.exports = class CreditRebills {
 
                     dbResultSet['recordsets'][0].forEach(element => {
                         payloadArray[0].values.push(
-                            `<table style='width: 100%;' border='1' cellpadding='10'>
+                            `<table style='width: 100%;' cellpadding='10'>
                                             <tbody>
                                                 <tr>
-                                                    <td>Customer Name</td>
+                                                    <td>Customer Name:</td>
                                                     <td>${element.SoldtoName}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Customer Soldto</td>
+                                                    <td>Customer Soldto:</td>
                                                     <td>${element.Soldto}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Reference</td>
+                                                    <td>Reference:</td>
                                                     <td>${element.ReferenceInvoice}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Service Issue</td>
+                                                    <td>Service Issue:</td>
                                                     <td>${element.SERVICE_ISSUE_NUMBER}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Status</td>
+                                                    <td>Status:</td>
                                                     <td>${element.STATUS_TEXT}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Credit Memo</td>
+                                                    <td>Credit Memo:</td>
                                                     <td>${element.CREDIT_MEMO}</td>
                                                 </tr>
                                             </tbody>
