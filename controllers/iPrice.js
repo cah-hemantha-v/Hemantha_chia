@@ -107,7 +107,7 @@ module.exports = class iPrice {
         const ProposalNumberUrl = `${this.url}/iprice/api/proposal/status`;
         const qs = {
             proposalId: proposal_status.proposal_number,
-            returnLimit: 10,
+            returnLimit: 9,
             workspace: proposal_status.workspace
         };
         return this.getIPrice(ProposalNumberUrl, qs);
