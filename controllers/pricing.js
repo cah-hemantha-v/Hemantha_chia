@@ -82,6 +82,7 @@ module.exports = class Pricing {
                     const uom = ['Sales'].concat(materialResponse.result.unitOfMeasures);
                     this.watson.response.context.counter = 0;
                     this.watson.response.context.uom = uom;
+                    this.watson.setContext("product_category", materialResponse.result.productCategoryDesc);
                     this.watson.response.output.chiapayload = [{
                             'type': 'text',
                             'values': [`<div>Here is the vendor and the description for the material number you have entered.</div>
