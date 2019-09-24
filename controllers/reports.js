@@ -4,6 +4,7 @@ const iPrice = require('./iPrice');
 const logger = require('../utils/logger');
 const ServiceNow = require('./snowhelper');
 const dbConfig = require('./db');
+const GlideRecord = require('./gliderecord');
 
 module.exports = class Reports {
     constructor() {
@@ -35,7 +36,15 @@ module.exports = class Reports {
                                 resolve(value);
                             })
                         })
-                    } else {
+                    } 
+                    else if (this.watson.getContext('submitexit')){
+                        this. submitExitOption(uid).then(data => {
+                            this.watson.watsonPostMessage(data).then((value) => {
+                                resolve(value);
+                            })
+                        })
+                    }
+                    else {
                         this.watson.watsonPostMessage(this.watson.response).then((value1) => {
                             resolve(value1);
                         })
@@ -117,11 +126,70 @@ module.exports = class Reports {
                 }).catch(err => {
                     // ... error checks
                     logger.error(err);
+                    sql.close();
                     this.watson.setContext("submitreporterr", true);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });
                 })
+            }).catch((err) => {
+                logger.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    submitExitOption(uid) {
+        logger.debug("Submit Exit Option Code called...");
+        return new Promise((resolve, reject) => {
+            ServiceNow.getUserProfile(uid).then((result) => {
+                let conID = this.watson.getContext("conversation_id");
+
+                let conversation_table = new GlideRecord('u_chia_conversation_logs', 'v1');
+                conversation_table.addEncodedQuery(`u_conversation_id=${conID}`);
+                conversation_table.query().then((resultt) => {
+
+                    let mapresult = resultt.map(function (obj) {
+                        return {
+                            u_number: obj.u_number,
+                            u_chia_output: obj.u_chia_output,
+                            u_user_input: obj.u_user_input,
+                        };
+                    }).sort(function (a, b) {
+                        return a.u_number.substr(-5) - b.u_number.substr(-5);
+                    });
+                    mapresult.splice(-2,2);
+                    let LogConcatenation = JSON.stringify(mapresult, null, 2);
+                    let requestorEmail = result[0].email;
+                    let sE = this.watson.getContext("submitexit");
+                    let sDate = sE.DateTimeStamp;
+                    let LookupKey = sDate + "-" + requestorEmail;
+                    let RequestType = this.watson.getContext("requestexitType");
+                   
+                    sql.connect(dbConfig).then(() => {
+                        return sql.query `insert into ChatbotExitOption (RequestorEmail,RequestText,LogConcatenation,LookupKey,DateTimeStamp,RequestType,RequestStatus,RequestSoldto) values
+                        (${requestorEmail},${sE.RequestText},${LogConcatenation},${LookupKey}, ${sDate}, ${RequestType}, 'pending', ${sE.Soldto})`
+                    }).then((dbResultSet) => {
+                        if (dbResultSet.rowsAffected[0] == 1) {
+                            this.watson.setContext("ExitOptionSubmitted", true);
+                        } else {
+                            this.watson.setContext("submitexiterr", true);
+                        }
+                        resolve(this.watson.response);
+                        sql.close();
+                    }).catch(err => {
+                        // ... error checks
+                        logger.error(err);
+                        sql.close();
+                        this.watson.setContext("submitexiterr", true);
+                        this.watson.watsonPostMessage(this.watson.response).then((rest) => {
+                            resolve(rest);
+                        });
+                    })
+                }).catch((err) => {
+                    logger.error(err);
+                });
+
             }).catch((err) => {
                 logger.error(err);
                 reject(err);
