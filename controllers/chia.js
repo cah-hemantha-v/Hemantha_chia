@@ -78,20 +78,16 @@ module.exports = class ChiaController {
             this.watson.setRequest(request);
             const uid = this.watson.request.login_uid;
             this.setIpriceUid(uid);
-            if(request.body){
-                if(request.body.input){
-                    if(~['go back','back','previous question','previous'].indexOf(request.body.input.text.toLowerCase())) {
-                        request.body = request.body.context.prev_context.context.prev_context;
-                    }
-                }                
+            if (request.body && request.body.input && request.body.context.prev_context.context.prev_context) {
+                if (~['go back', 'back', 'previous question', 'previous'].indexOf(request.body.input.text.toLowerCase())) {
+                    request.body = request.body.context.prev_context.context.prev_context;
+                }
             }
-    
+
             this.watson.watsonPostMessage(request.body).then((watsonResponse) => {   
                 watsonResponse.context.prev_context = request.body;
-                if(watsonResponse.context.prev_context){
-                    if(watsonResponse.context.prev_context.context.prev_context){
-                        delete watsonResponse.context.prev_context.context.prev_context.context.prev_context;
-                    }
+                if (watsonResponse.context.prev_context && watsonResponse.context.prev_context.context.prev_context) {
+                    delete watsonResponse.context.prev_context.context.prev_context.context.prev_context;
                 } 
                 this.setWatsonResponse(watsonResponse);
                 if (!this.watson.getContext("sys_id_updated")) resolve(this.updateConversationLog(uid));
