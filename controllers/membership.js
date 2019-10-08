@@ -106,7 +106,7 @@ module.exports = class Membership {
                         for (let i = 0; i < membershipResponse.result.length; i++) {
                             if (membershipResponse.result[i].primaryAgreement) {
                                 let tierResponse = '';
-                                this.watson.response.output.text.push(`Winning price for soldto ${soldto} and material ${cah_material} comes from ${membershipResponse.result[i].agreementCategoryTypeDesc} contract ${membershipResponse.result[i].agreementDescription}-${membershipResponse.result[i].agreementExternalDescription} ${tierResponse} and is valid from ${membershipResponse.result[i].agreementMaterialValidFromDateDisplay} to ${membershipResponse.result[i].agreementMaterialValidToDateDisplay}`);
+                                this.watson.response.output.text.push(`Winning cost source for soldto ${soldto} and material ${cah_material} comes from ${membershipResponse.result[i].agreementCategoryTypeDesc} contract ${membershipResponse.result[i].agreementDescription}-${membershipResponse.result[i].agreementExternalDescription}(${membershipResponse.result[i].agreementNumber}) ${tierResponse} and is valid from ${membershipResponse.result[i].agreementMaterialValidFromDateDisplay} to ${membershipResponse.result[i].agreementMaterialValidToDateDisplay}`);
                             } else {
                                 this.watson.response.output.text.push(`<div>This customer material combination is also eligible on the following contracts:</div>
                             <div>${membershipResponse.result[i].agreementNumber}</div>

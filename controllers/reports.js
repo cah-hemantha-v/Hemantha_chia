@@ -117,6 +117,7 @@ module.exports = class Reports {
                 }).catch(err => {
                     // ... error checks
                     logger.error(err);
+                    sql.close();
                     this.watson.setContext("submitreporterr", true);
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);

@@ -4,8 +4,8 @@
   "description": "NodeJS project created for CHIA for Medical Pricing team.",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "start-dev": "nodemon app.js",
+    "start": "node preload-script.js && node app.js",
+    "start-dev": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -35,7 +35,7 @@
     "winston": "^3.2.1"
   },
   "engines": {
-    "node": "10.16.x",
-    "npm": "6.9.x"
+    "node": "10.x.x",
+    "npm": "6.x.x"
   }
 }
