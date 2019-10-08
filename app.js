@@ -15,7 +15,10 @@ const whiteListURL = process.env.WHITELISTURLS || 'http://localhost:3000'
 const app = express();
 
 app.use(helmet());
+
+// Bootstrap application settings load UI from public folder
 app.use(express.static('./public'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
@@ -49,7 +52,6 @@ app.use((req, res) => {
     })
 });
 
-logger.debug(`Hello before console..`);
 app.listen(port);
 // eslint-disable-next-line
 logger.debug(`Server running on port: ${port}`);
