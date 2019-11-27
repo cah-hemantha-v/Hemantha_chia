@@ -29,12 +29,34 @@ function getUid(request, response, next) {
     }
 }
 
+// function validateToken(request, response, next) {
+//     const authHeader = request.headers.jwttoken;
+//     console.log('JWT token is: ', authHeader);
+//     if (authHeader) {
+//         jwt.verify(authHeader, process.env.CHIA_JWT_SIGNATURE, function (error, decodedToken) {
+//             if (error) {
+//                 return response.status(401).send({
+//                     "success": false,
+//                     "error": "Invalid authorization token"
+//                 });
+//             }
+//             next();
+//         });
+//     } else {
+//         response.status(401).send({
+//             "success": false,
+//             "error": "An auth token is required "
+//         });
+//     }
+//};
+
+
 module.exports = function getRouter(app) {
     app.get('/', (req, res) => {
         res.send('You are not authorized to view this page!!');
     });
 
-    app.post('/api/message', getUid, (req, res) => {
+    app.post('/message', getUid, (req, res) => {
         let chiaController = new chia();
         let snowlogger = new SnowLogger();
         chiaController.postWatsonMessage(req).then((rest) => {
