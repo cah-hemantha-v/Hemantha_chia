@@ -6,6 +6,7 @@ const SnowLogger = require('../controllers/snowlogger');
 
 function getUid(request, response, next) {
     const token = request.headers['authorization'];
+    // console.log(request.headers['authorization']);      //  
     const chiaOutput = {
         output: {
             text: ['Your session has expired. Please refresh the page to login again.']
@@ -15,6 +16,7 @@ function getUid(request, response, next) {
     else {
         new Okta(process.env.OKTA_HOST, token).getUserInfo().then((body) => {
             let oktaResponse = JSON.parse(body);
+            // console.log(oktaResponse);     //
             if (oktaResponse.uid) {
                 request.login_uid = oktaResponse.uid;
             } else {
@@ -59,6 +61,8 @@ module.exports = function getRouter(app) {
     app.post('/message', getUid, (req, res) => {
         let chiaController = new chia();
         let snowlogger = new SnowLogger();
+        console.log(req);   //
+        console.log(req.login_uid);     //
         chiaController.postWatsonMessage(req).then((rest) => {
             try {
                 snowlogger.createConversationLog(rest);

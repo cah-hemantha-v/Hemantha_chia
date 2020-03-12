@@ -110,6 +110,8 @@ module.exports = class iPrice {
             returnLimit: 9,
             workspace: proposal_status.workspace
         };
+        console.log('qs', qs);  //
+        console.log('ProposalNumberUrl',ProposalNumberUrl); //
         return this.getIPrice(ProposalNumberUrl, qs);
     }
 

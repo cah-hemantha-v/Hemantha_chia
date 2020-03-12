@@ -6,4 +6,4 @@ const dbConfig = {
     requestTimeout: 30000
 };
 
-module.exports = dbConfig; 
+module.exports = dbConfig;

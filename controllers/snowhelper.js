@@ -7,9 +7,9 @@ module.exports = class ServiceNow {
     static getUserProfile(uid) {
         logger.debug(`get user profile - ${uid}`)
         return new Promise((resolve, reject) => {
-            const grUser = new glideRecord('sys_user');
+            const grUser = new glideRecord('sys_user');     //Glide record- query, insert, update, delete the data from a specified table in Snow. It executes on server side  //  table-name 'sys_user'
             grUser.setReturnFields('sys_id, email');
-            grUser.addEncodedQuery(`user_name=${uid}^active=true`);
+            grUser.addEncodedQuery(`user_name=${uid}^active=true`);     //addEncodedQuery() can filter the record based upon the multiple fileds  //addQuery can filter based upon only one field
             grUser.setLimit(1);
             grUser.query().then(function (result) {
                 if (result.length > 0) {

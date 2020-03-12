@@ -187,6 +187,7 @@ module.exports = class Pricing {
             const iPriceUrl = 'http://iprice.cardinalhealth.net/iprice/index.jsp';
             const proposal_status = this.watson.getContext("proposal_status");
             this.iprice.checkProposalStatus(proposal_status).then((proposalResponse) => {
+                console.log('proposalResponse',proposalResponse);   //
                 if (proposalResponse.statusCode == 300) {
                     let positionCodes = [];
                     this.watson.setContext('hasMultiPosition', true);
@@ -195,6 +196,7 @@ module.exports = class Pricing {
                     });
                     proposalResponse.result.positions = positionCodes;
                     this.watson.setContext('positioncodes', proposalResponse.result);
+                    console.log('watson response- check proposal',this.watson.response);    //
                     this.watson.watsonPostMessage(this.watson.response).then((rest) => {
                         resolve(rest);
                     });

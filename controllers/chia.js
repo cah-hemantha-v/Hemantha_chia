@@ -39,8 +39,11 @@ module.exports = class ChiaController {
             ServiceNow.getUserProfile(uid).then((result) => {
                 logger.debug("sys_id = " + result[0].sys_id);
                 let sn = this.watson.getContext('sn');
-                sn.user.sys_id = result[0].sys_id;
+                 console.log('sn', sn);      //
+                sn.user.sys_id = result[0].sys_id;                
+                 console.log('sn.user.sys_id', sn.user.sys_id);      //
                 this.watson.setContext("sn", sn);
+                 console.log('sn', sn);      //
                 this.watson.setContext('sys_id_updated', true);
                 resolve(this.apiRoutes(uid));
             }).catch((err) => {
@@ -52,6 +55,7 @@ module.exports = class ChiaController {
 
     apiRoutes(uid) {
         let subProposal = this.watson.getContext('submitproposal');
+        console.log('Submit Proposal' , subProposal) //
         if(subProposal){logger.info(`ProposalID-${subProposal.proposalId}`);}
         logger.debug("1. Inside apiRoutes() method.");
         if (this.watson.getContext("CheckSoldto")) return (this.pricing.checkSoldTo());
@@ -85,6 +89,7 @@ module.exports = class ChiaController {
             }
 
             this.watson.watsonPostMessage(request.body).then((watsonResponse) => {   
+                console.log('watsonResponse',watsonResponse);   //
                 watsonResponse.context.prev_context = request.body;
                 if (watsonResponse.context.prev_context && watsonResponse.context.prev_context.context.prev_context) {
                     delete watsonResponse.context.prev_context.context.prev_context.context.prev_context;
